@@ -33,12 +33,29 @@ def calcular_pagos(jugadores, total, inicio, fin):
         tiempos.append(tiempo)
     suma_tiempos = sum(tiempos)
     pagos = []
+    pagos_redondeados = []
+    suma_redondeada = 0
+
+    # Calcular pagos sin redondear
     for i, j in enumerate(jugadores):
         pago = total * (tiempos[i] / suma_tiempos) if suma_tiempos > 0 else 0
-        pagos.append(
-            {"nombre": j["nombre"], "pago": math.ceil(pago), "tiempo": tiempos[i]}
-        )
-    return pagos
+        pagos.append({"nombre": j["nombre"], "pago": pago, "tiempo": tiempos[i]})
+
+    # Redondear pagos excepto el último
+    for i, p in enumerate(pagos):
+        if i < len(pagos) - 1:
+            pago_r = round(p["pago"])
+            pagos_redondeados.append(
+                {"nombre": p["nombre"], "pago": pago_r, "tiempo": p["tiempo"]}
+            )
+            suma_redondeada += pago_r
+        else:
+            # El último pago ajusta la diferencia para cuadrar el total
+            pago_r = round(total - suma_redondeada)
+            pagos_redondeados.append(
+                {"nombre": p["nombre"], "pago": pago_r, "tiempo": p["tiempo"]}
+            )
+    return pagos_redondeados
 
 
 def main():
