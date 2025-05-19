@@ -2,6 +2,16 @@ import math
 
 
 def pedir_float(mensaje, minimo=None):
+    """
+    Solicita al usuario un número flotante por consola.
+
+    Args:
+        mensaje (str): Mensaje a mostrar al usuario.
+        minimo (float, optional): Valor mínimo aceptado (inclusive). Si es None, no hay mínimo.
+
+    Returns:
+        float: El valor ingresado por el usuario, validado.
+    """
     while True:
         valor = input(mensaje)
         try:
@@ -15,6 +25,12 @@ def pedir_float(mensaje, minimo=None):
 
 
 def pedir_jugadores():
+    """
+    Solicita al usuario los datos de los jugadores (nombre, hora de llegada y salida).
+
+    Returns:
+        list: Lista de diccionarios con los datos de cada jugador.
+    """
     jugadores = []
     while True:
         nombre = input("Nombre del jugador (deja vacío para terminar): ")
@@ -27,6 +43,19 @@ def pedir_jugadores():
 
 
 def calcular_pagos(jugadores, total, inicio, fin):
+    """
+    Calcula el pago correspondiente a cada jugador según el tiempo jugado.
+    Redondea los pagos y ajusta el último para cuadrar el total.
+
+    Args:
+        jugadores (list): Lista de diccionarios con los datos de cada jugador.
+        total (float): Monto total a repartir.
+        inicio (float): Hora de inicio de la cancha.
+        fin (float): Hora de fin de la cancha.
+
+    Returns:
+        list: Lista de diccionarios con el nombre, pago y tiempo jugado de cada jugador.
+    """
     tiempos = []
     for j in jugadores:
         tiempo = max(0, min(j["salida"], fin) - max(j["llegada"], inicio))
@@ -59,6 +88,9 @@ def calcular_pagos(jugadores, total, inicio, fin):
 
 
 def main():
+    """
+    Función principal. Solicita los datos, calcula y muestra los pagos.
+    """
     print("=== Paddle Split ===")
     inicio = pedir_float("Hora de inicio de la cancha (ej: 18.0): ", minimo=0)
     fin = pedir_float("Hora de fin de la cancha (ej: 20.0): ", minimo=inicio)
