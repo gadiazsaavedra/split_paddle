@@ -1,14 +1,27 @@
 import math
 
 
+def pedir_float(mensaje, minimo=None):
+    while True:
+        valor = input(mensaje)
+        try:
+            valor = float(valor)
+            if minimo is not None and valor < minimo:
+                print(f"El valor debe ser mayor o igual a {minimo}.")
+                continue
+            return valor
+        except ValueError:
+            print("Por favor, ingresa un número válido.")
+
+
 def pedir_jugadores():
     jugadores = []
     while True:
         nombre = input("Nombre del jugador (deja vacío para terminar): ")
         if not nombre:
             break
-        llegada = float(input(f"Hora de llegada de {nombre} (ej: 18.0): "))
-        salida = float(input(f"Hora de salida de {nombre} (ej: 20.0): "))
+        llegada = pedir_float(f"Hora de llegada de {nombre} (ej: 18.0): ", minimo=0)
+        salida = pedir_float(f"Hora de salida de {nombre} (ej: 20.0): ", minimo=llegada)
         jugadores.append({"nombre": nombre, "llegada": llegada, "salida": salida})
     return jugadores
 
@@ -30,9 +43,9 @@ def calcular_pagos(jugadores, total, inicio, fin):
 
 def main():
     print("=== Paddle Split ===")
-    inicio = float(input("Hora de inicio de la cancha (ej: 18.0): "))
-    fin = float(input("Hora de fin de la cancha (ej: 20.0): "))
-    total = float(input("Total a pagar ($): "))
+    inicio = pedir_float("Hora de inicio de la cancha (ej: 18.0): ", minimo=0)
+    fin = pedir_float("Hora de fin de la cancha (ej: 20.0): ", minimo=inicio)
+    total = pedir_float("Total a pagar ($): ", minimo=0.01)
     jugadores = pedir_jugadores()
     pagos = calcular_pagos(jugadores, total, inicio, fin)
     print("\n--- Pagos ---")
