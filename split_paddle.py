@@ -49,9 +49,18 @@ def main():
     jugadores = pedir_jugadores()
     pagos = calcular_pagos(jugadores, total, inicio, fin)
     print("\n--- Pagos ---")
-    for p in pagos:
-        monto = f"{p['pago']:,.0f}".replace(",", ".")
-        print(f"{p['nombre']}: ${monto} ({p['tiempo']:.2f} horas)")
+    if pagos:
+        # Calcular el ancho máximo para los nombres
+        max_nombre = max(len(p["nombre"]) for p in pagos)
+        print(f"{'Jugador'.ljust(max_nombre)} | {'Pago'.rjust(8)} | {'Horas'.rjust(7)}")
+        print("-" * (max_nombre + 22))
+        for p in pagos:
+            monto = f"{p['pago']:,.0f}".replace(",", ".")
+            print(
+                f"{p['nombre'].ljust(max_nombre)} | ${monto.rjust(7)} | {p['tiempo']:7.2f}"
+            )
+    else:
+        print("No se ingresaron jugadores.")
 
 
 if __name__ == "__main__":
