@@ -24,6 +24,30 @@ def pedir_float(mensaje, minimo=None):
             print("Por favor, ingresa un número válido.")
 
 
+def pedir_hora_jugador(nombre_jugador):
+    """
+    Solicita la hora de llegada y salida para un jugador, validando que la salida no sea menor que la llegada.
+
+    Args:
+        nombre_jugador (str): Nombre del jugador.
+
+    Returns:
+        tuple: (hora_llegada, hora_salida)
+    """
+    hora_llegada = pedir_float(
+        f"Hora de llegada de {nombre_jugador} (ej: 18.0): ", minimo=0
+    )
+    while True:
+        hora_salida = pedir_float(
+            f"Hora de salida de {nombre_jugador} (ej: 20.0): ", minimo=hora_llegada
+        )
+        if hora_salida < hora_llegada:
+            print("La hora de salida no puede ser menor que la hora de llegada.")
+        else:
+            break
+    return hora_llegada, hora_salida
+
+
 def pedir_jugadores():
     """
     Solicita al usuario los datos de los jugadores (nombre, hora de llegada y salida).
@@ -36,17 +60,7 @@ def pedir_jugadores():
         nombre_jugador = input("Nombre del jugador (deja vacío para terminar): ")
         if not nombre_jugador:
             break
-        hora_llegada = pedir_float(
-            f"Hora de llegada de {nombre_jugador} (ej: 18.0): ", minimo=0
-        )
-        while True:
-            hora_salida = pedir_float(
-                f"Hora de salida de {nombre_jugador} (ej: 20.0): ", minimo=hora_llegada
-            )
-            if hora_salida < hora_llegada:
-                print("La hora de salida no puede ser menor que la hora de llegada.")
-            else:
-                break
+        hora_llegada, hora_salida = pedir_hora_jugador(nombre_jugador)
         jugadores.append(
             {"nombre": nombre_jugador, "llegada": hora_llegada, "salida": hora_salida}
         )
