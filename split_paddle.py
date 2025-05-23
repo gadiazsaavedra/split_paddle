@@ -45,7 +45,7 @@ def pedir_jugadores():
 def calcular_pagos(jugadores, total, inicio, fin):
     """
     Calcula el pago correspondiente a cada jugador según el tiempo jugado.
-    Redondea los pagos y ajusta el último para cuadrar el total.
+    No usa input() ni print().
 
     Args:
         jugadores (list): Lista de diccionarios con los datos de cada jugador.
@@ -65,12 +65,10 @@ def calcular_pagos(jugadores, total, inicio, fin):
     pagos_redondeados = []
     suma_redondeada = 0
 
-    # Calcular pagos sin redondear
     for i, j in enumerate(jugadores):
         pago = total * (tiempos[i] / suma_tiempos) if suma_tiempos > 0 else 0
         pagos.append({"nombre": j["nombre"], "pago": pago, "tiempo": tiempos[i]})
 
-    # Redondear pagos excepto el último
     for i, p in enumerate(pagos):
         if i < len(pagos) - 1:
             pago_r = round(p["pago"])
@@ -79,12 +77,28 @@ def calcular_pagos(jugadores, total, inicio, fin):
             )
             suma_redondeada += pago_r
         else:
-            # El último pago ajusta la diferencia para cuadrar el total
             pago_r = round(total - suma_redondeada)
             pagos_redondeados.append(
                 {"nombre": p["nombre"], "pago": pago_r, "tiempo": p["tiempo"]}
             )
     return pagos_redondeados
+
+
+def mostrar_pagos(pagos):
+    """
+    Solo muestra los pagos por pantalla, no hace cálculos.
+    """
+    if pagos:
+        max_nombre = max(len(p["nombre"]) for p in pagos)
+        print(f"{'Jugador'.ljust(max_nombre)} | {'Pago'.rjust(8)} | {'Horas'.rjust(7)}")
+        print("-" * (max_nombre + 22))
+        for p in pagos:
+            monto = f"{p['pago']:,.0f}".replace(",", ".")
+            print(
+                f"{p['nombre'].ljust(max_nombre)} | ${monto.rjust(7)} | {p['tiempo']:7.2f}"
+            )
+    else:
+        print("No se ingresaron jugadores.")
 
 
 def main():
@@ -98,18 +112,7 @@ def main():
     jugadores = pedir_jugadores()
     pagos = calcular_pagos(jugadores, total, inicio, fin)
     print("\n--- Pagos ---")
-    if pagos:
-        # Calcular el ancho máximo para los nombres
-        max_nombre = max(len(p["nombre"]) for p in pagos)
-        print(f"{'Jugador'.ljust(max_nombre)} | {'Pago'.rjust(8)} | {'Horas'.rjust(7)}")
-        print("-" * (max_nombre + 22))
-        for p in pagos:
-            monto = f"{p['pago']:,.0f}".replace(",", ".")
-            print(
-                f"{p['nombre'].ljust(max_nombre)} | ${monto.rjust(7)} | {p['tiempo']:7.2f}"
-            )
-    else:
-        print("No se ingresaron jugadores.")
+    mostrar_pagos(pagos)
 
 
 if __name__ == "__main__":
