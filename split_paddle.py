@@ -37,7 +37,14 @@ def pedir_jugadores():
         if not nombre:
             break
         llegada = pedir_float(f"Hora de llegada de {nombre} (ej: 18.0): ", minimo=0)
-        salida = pedir_float(f"Hora de salida de {nombre} (ej: 20.0): ", minimo=llegada)
+        while True:
+            salida = pedir_float(
+                f"Hora de salida de {nombre} (ej: 20.0): ", minimo=llegada
+            )
+            if salida < llegada:
+                print("La hora de salida no puede ser menor que la hora de llegada.")
+            else:
+                break
         jugadores.append({"nombre": nombre, "llegada": llegada, "salida": salida})
     return jugadores
 
@@ -108,8 +115,18 @@ def main():
     print("=== Paddle Split ===")
     inicio = pedir_float("Hora de inicio de la cancha (ej: 18.0): ", minimo=0)
     fin = pedir_float("Hora de fin de la cancha (ej: 20.0): ", minimo=inicio)
+    if fin < inicio:
+        print("La hora de fin no puede ser menor que la hora de inicio.")
+        return
     total = pedir_float("Total a pagar ($): ", minimo=0.01)
     jugadores = pedir_jugadores()
+    # Validación adicional: ningún jugador puede salir después de la hora de fin de la cancha
+    for jugador in jugadores:
+        if jugador["salida"] > fin:
+            print(
+                f"Advertencia: {jugador['nombre']} tiene hora de salida después del fin de la cancha. Se ajustará a {fin}."
+            )
+            jugador["salida"] = fin
     pagos = calcular_pagos(jugadores, total, inicio, fin)
     print("\n--- Pagos ---")
     mostrar_pagos(pagos)
