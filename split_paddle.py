@@ -139,19 +139,15 @@ def calcular_pagos(jugadores, monto_total, hora_inicio, hora_fin):
 
 def mostrar_pagos(lista_pagos):
     """
-    Muestra los pagos por pantalla en formato de tabla.
+    Muestra los pagos por pantalla en formato amigable para móviles.
     """
     if lista_pagos:
-        ancho_nombre = max(len(pago["nombre"]) for pago in lista_pagos)
-        print(
-            f"{'Jugador'.ljust(ancho_nombre)} | {'Pago'.rjust(8)} | {'Horas'.rjust(7)}"
-        )
-        print("-" * (ancho_nombre + 22))
+        print("=== Resumen de Pagos ===")
         for pago in lista_pagos:
-            monto_str = f"{pago['pago']:,.0f}".replace(",", ".")
-            print(
-                f"{pago['nombre'].ljust(ancho_nombre)} | ${monto_str.rjust(7)} | {pago['tiempo']:7.2f}"
-            )
+            print(f"Jugador: {pago['nombre']}")
+            print(f"  Pago: ${pago['pago']:,}".replace(",", "."))
+            print(f"  Horas jugadas: {pago['tiempo']:.2f}")
+            print("-" * 20)
     else:
         print("No se ingresaron jugadores.")
 
