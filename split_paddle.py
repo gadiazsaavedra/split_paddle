@@ -134,21 +134,22 @@ def calcular_pagos(jugadores, monto_total, hora_inicio, hora_fin):
                     "tiempo": pago_info["tiempo"],
                 }
             )
-    return pagos_redondeados
+    return pagos_redondeados, pagos_detallados
 
 
-def mostrar_pagos(lista_pagos, hora_inicio=None, hora_fin=None):
+def mostrar_pagos(lista_pagos, hora_inicio=None, hora_fin=None, pagos_detallados=None):
     """
     Muestra los pagos por pantalla en formato amigable para móviles.
     También muestra el total de horas de cancha (hora_fin - hora_inicio) en horas y minutos.
     Destaca quién jugó más y menos tiempo.
+    Si se proveen los pagos_detallados, muestra el pago exacto antes de redondear.
     """
     if lista_pagos:
         # Encontrar máximo y mínimo tiempo jugado
         max_tiempo = max(pago["tiempo"] for pago in lista_pagos)
         min_tiempo = min(pago["tiempo"] for pago in lista_pagos)
         print("=== Resumen de Pagos ===")
-        for pago in lista_pagos:
+        for i, pago in enumerate(lista_pagos):
             destacado = ""
             if pago["tiempo"] == max_tiempo and max_tiempo != min_tiempo:
                 destacado = " (más tiempo)"
@@ -157,6 +158,10 @@ def mostrar_pagos(lista_pagos, hora_inicio=None, hora_fin=None):
             print(f"Jugador: {pago['nombre']}{destacado}")
             print(f"  Pago: ${pago['pago']:,}".replace(",", "."))
             print(f"  Horas jugadas: {pago['tiempo']:.2f}")
+            # Mostrar pago exacto antes de redondear si está disponible
+            if pagos_detallados:
+                pago_exact = pagos_detallados[i]["pago"]
+                print(f"  Pago exacto antes de redondear: ${pago_exact:.2f}")
             print("-" * 20)
         if hora_inicio is not None and hora_fin is not None:
             total_horas_cancha = hora_fin - hora_inicio
@@ -195,9 +200,11 @@ def main():
                 f"Advertencia: {jugador['nombre']} tiene hora de salida después del fin de la cancha. Se ajustará a {hora_fin}."
             )
             jugador["salida"] = hora_fin
-    lista_pagos = calcular_pagos(jugadores, monto_total, hora_inicio, hora_fin)
+    lista_pagos, pagos_detallados = calcular_pagos(
+        jugadores, monto_total, hora_inicio, hora_fin
+    )
     print("\n--- Pagos ---")
-    mostrar_pagos(lista_pagos, hora_inicio, hora_fin)
+    mostrar_pagos(lista_pagos, hora_inicio, hora_fin, pagos_detallados)
 
 
 if __name__ == "__main__":
