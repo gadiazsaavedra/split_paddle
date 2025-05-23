@@ -41,13 +41,13 @@ def pedir_hora_jugador(nombre_jugador, hora_fin_cancha=None):
         tuple: (hora_llegada, hora_salida)
     """
     hora_llegada = pedir_float(
-        f"Hora de llegada de {nombre_jugador} (ej: 18.0): ",
+        f"Hora in de {nombre_jugador} (ej: 18.0): ",
         minimo=0,
         maximo=hora_fin_cancha,
     )
     while True:
         hora_salida = pedir_float(
-            f"Hora de salida de {nombre_jugador} (ej: 20.0): ",
+            f"Hora out de {nombre_jugador} (ej: 20.0): ",
             minimo=hora_llegada,
             maximo=hora_fin_cancha,
         )
@@ -184,4 +184,5 @@ def main():
 
 
 if __name__ == "__main__":
+    print("Usa solo números y puntos para las horas. Ejemplo: 18.5 para 18:30")
     main()
