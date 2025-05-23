@@ -1,13 +1,14 @@
 import math
 
 
-def pedir_float(mensaje, minimo=None):
+def pedir_float(mensaje, minimo=None, maximo=None):
     """
-    Solicita al usuario un número flotante por consola.
+    Solicita al usuario un número flotante por consola, validando rango.
 
     Args:
         mensaje (str): Mensaje a mostrar al usuario.
         minimo (float, optional): Valor mínimo aceptado (inclusive). Si es None, no hay mínimo.
+        maximo (float, optional): Valor máximo aceptado (inclusive). Si es None, no hay máximo.
 
     Returns:
         float: El valor ingresado por el usuario, validado.
@@ -17,38 +18,47 @@ def pedir_float(mensaje, minimo=None):
         try:
             valor = float(valor_ingresado)
             if minimo is not None and valor < minimo:
-                print(f"El valor debe ser mayor o igual a {minimo}.")
+                print(f"Error: El valor debe ser mayor o igual a {minimo}.")
+                continue
+            if maximo is not None and valor > maximo:
+                print(f"Error: El valor debe ser menor o igual a {maximo}.")
                 continue
             return valor
         except ValueError:
-            print("Por favor, ingresa un número válido.")
+            print("Error: Por favor, ingresa un número válido.")
 
 
-def pedir_hora_jugador(nombre_jugador):
+def pedir_hora_jugador(nombre_jugador, hora_fin_cancha=None):
     """
-    Solicita la hora de llegada y salida para un jugador, validando que la salida no sea menor que la llegada.
+    Solicita la hora de llegada y salida para un jugador, validando que la salida no sea menor que la llegada
+    y que no exceda la hora de fin de la cancha si se proporciona.
 
     Args:
         nombre_jugador (str): Nombre del jugador.
+        hora_fin_cancha (float, optional): Hora máxima de salida permitida.
 
     Returns:
         tuple: (hora_llegada, hora_salida)
     """
     hora_llegada = pedir_float(
-        f"Hora de llegada de {nombre_jugador} (ej: 18.0): ", minimo=0
+        f"Hora de llegada de {nombre_jugador} (ej: 18.0): ",
+        minimo=0,
+        maximo=hora_fin_cancha,
     )
     while True:
         hora_salida = pedir_float(
-            f"Hora de salida de {nombre_jugador} (ej: 20.0): ", minimo=hora_llegada
+            f"Hora de salida de {nombre_jugador} (ej: 20.0): ",
+            minimo=hora_llegada,
+            maximo=hora_fin_cancha,
         )
         if hora_salida < hora_llegada:
-            print("La hora de salida no puede ser menor que la hora de llegada.")
+            print("Error: La hora de salida no puede ser menor que la hora de llegada.")
         else:
             break
     return hora_llegada, hora_salida
 
 
-def pedir_jugadores():
+def pedir_jugadores(hora_fin_cancha=None):
     """
     Solicita al usuario los datos de los jugadores (nombre, hora de llegada y salida).
 
@@ -60,7 +70,7 @@ def pedir_jugadores():
         nombre_jugador = input("Nombre del jugador (deja vacío para terminar): ")
         if not nombre_jugador:
             break
-        hora_llegada, hora_salida = pedir_hora_jugador(nombre_jugador)
+        hora_llegada, hora_salida = pedir_hora_jugador(nombre_jugador, hora_fin_cancha)
         jugadores.append(
             {"nombre": nombre_jugador, "llegada": hora_llegada, "salida": hora_salida}
         )
@@ -154,12 +164,19 @@ def main():
     hora_inicio = pedir_float("Hora de inicio de la cancha (ej: 18.0): ", minimo=0)
     hora_fin = pedir_float("Hora de fin de la cancha (ej: 20.0): ", minimo=hora_inicio)
     if hora_fin < hora_inicio:
-        print("La hora de fin no puede ser menor que la hora de inicio.")
+        print("Error: La hora de fin no puede ser menor que la hora de inicio.")
         return
     monto_total = pedir_float("Total a pagar ($): ", minimo=0.01)
-    jugadores = pedir_jugadores()
-    # Validación adicional: ningún jugador puede salir después de la hora de fin de la cancha
+    jugadores = pedir_jugadores(hora_fin_cancha=hora_fin)
+    if not jugadores:
+        print("Error: Debes ingresar al menos un jugador.")
+        return
     for jugador in jugadores:
+        if jugador["llegada"] > jugador["salida"]:
+            print(
+                f"Error: {jugador['nombre']} tiene hora de llegada mayor que la de salida."
+            )
+            return
         if jugador["salida"] > hora_fin:
             print(
                 f"Advertencia: {jugador['nombre']} tiene hora de salida después del fin de la cancha. Se ajustará a {hora_fin}."
