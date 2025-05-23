@@ -137,17 +137,34 @@ def calcular_pagos(jugadores, monto_total, hora_inicio, hora_fin):
     return pagos_redondeados
 
 
-def mostrar_pagos(lista_pagos):
+def mostrar_pagos(lista_pagos, hora_inicio=None, hora_fin=None):
     """
     Muestra los pagos por pantalla en formato amigable para móviles.
+    También muestra el total de horas de cancha (hora_fin - hora_inicio) en horas y minutos.
+    Destaca quién jugó más y menos tiempo.
     """
     if lista_pagos:
+        # Encontrar máximo y mínimo tiempo jugado
+        max_tiempo = max(pago["tiempo"] for pago in lista_pagos)
+        min_tiempo = min(pago["tiempo"] for pago in lista_pagos)
         print("=== Resumen de Pagos ===")
         for pago in lista_pagos:
-            print(f"Jugador: {pago['nombre']}")
+            destacado = ""
+            if pago["tiempo"] == max_tiempo and max_tiempo != min_tiempo:
+                destacado = " (más tiempo)"
+            elif pago["tiempo"] == min_tiempo and max_tiempo != min_tiempo:
+                destacado = " (menos tiempo)"
+            print(f"Jugador: {pago['nombre']}{destacado}")
             print(f"  Pago: ${pago['pago']:,}".replace(",", "."))
             print(f"  Horas jugadas: {pago['tiempo']:.2f}")
             print("-" * 20)
+        if hora_inicio is not None and hora_fin is not None:
+            total_horas_cancha = hora_fin - hora_inicio
+            horas = int(total_horas_cancha)
+            minutos = int(round((total_horas_cancha - horas) * 60))
+            print(
+                f"Total de horas de cancha: {horas}h {minutos}min ({total_horas_cancha:.2f} horas)"
+            )
     else:
         print("No se ingresaron jugadores.")
 
@@ -180,7 +197,7 @@ def main():
             jugador["salida"] = hora_fin
     lista_pagos = calcular_pagos(jugadores, monto_total, hora_inicio, hora_fin)
     print("\n--- Pagos ---")
-    mostrar_pagos(lista_pagos)
+    mostrar_pagos(lista_pagos, hora_inicio, hora_fin)
 
 
 if __name__ == "__main__":
