@@ -56,7 +56,8 @@ def pedir_float(mensaje, minimo=None, maximo=None, flexible_hora=False):
 
 def pedir_hora_jugador(nombre_jugador, hora_inicio_cancha=None, hora_fin_cancha=None):
     """
-    Solicita la hora de llegada y salida para un jugador, con mensajes breves.
+    Solicita la hora de llegada y salida para un jugador, con mensajes breves y validaciones proactivas.
+    Si la hora de llegada es igual a la de salida, advierte y pide confirmación.
     """
     # Hora de llegada
     if hora_inicio_cancha is not None:
@@ -105,6 +106,16 @@ def pedir_hora_jugador(nombre_jugador, hora_inicio_cancha=None, hora_fin_cancha=
                 )
                 if hora_salida < hora_llegada:
                     print("Error: salida < llegada")
+                elif hora_salida == hora_llegada:
+                    confirm = (
+                        input("Llegada y salida son iguales, ¿confirmar? (s/n): ")
+                        .strip()
+                        .lower()
+                    )
+                    if confirm == "s":
+                        break
+                    else:
+                        print("Vuelve a ingresar la hora de salida.")
                 else:
                     break
     else:
@@ -117,6 +128,16 @@ def pedir_hora_jugador(nombre_jugador, hora_inicio_cancha=None, hora_fin_cancha=
             )
             if hora_salida < hora_llegada:
                 print("Error: salida < llegada")
+            elif hora_salida == hora_llegada:
+                confirm = (
+                    input("Llegada y salida son iguales, ¿confirmar? (s/n): ")
+                    .strip()
+                    .lower()
+                )
+                if confirm == "s":
+                    break
+                else:
+                    print("Vuelve a ingresar la hora de salida.")
             else:
                 break
 
@@ -290,36 +311,66 @@ def mostrar_pagos(lista_pagos, hora_inicio=None, hora_fin=None, pagos_detallados
 def main():
     """
     Función principal. Solicita los datos, calcula y muestra los pagos.
+    Incluye validaciones proactivas.
     """
     print("=== Paddle Split ===")
-    hora_inicio = pedir_float("Hora de inicio de la cancha (ej: 18.0): ", minimo=0)
-    hora_fin = pedir_float("Hora de fin de la cancha (ej: 20.0): ", minimo=hora_inicio)
-    if hora_fin < hora_inicio:
-        print("Error: La hora de fin no puede ser menor que la hora de inicio.")
-        return
-    monto_total = pedir_float("Total a pagar ($): ", minimo=0.01)
-    jugadores = pedir_jugadores(
-        hora_inicio_cancha=hora_inicio, hora_fin_cancha=hora_fin
-    )
-    if not jugadores:
-        print("Error: Debes ingresar al menos un jugador.")
-        return
-    for jugador in jugadores:
-        if jugador["llegada"] > jugador["salida"]:
+    while True:
+        hora_inicio = pedir_float("Hora de inicio de la cancha (ej: 18.0): ", minimo=0)
+        hora_fin = pedir_float(
+            "Hora de fin de la cancha (ej: 20.0): ", minimo=hora_inicio
+        )
+        if hora_fin < hora_inicio:
+            print("Error: La hora de fin no puede ser menor que la hora de inicio.")
+            continue
+        monto_total = pedir_float("Total a pagar ($): ", minimo=0.01)
+        jugadores = pedir_jugadores(
+            hora_inicio_cancha=hora_inicio, hora_fin_cancha=hora_fin
+        )
+        if not jugadores:
+            print("Error: Debes ingresar al menos un jugador.")
+            continue
+
+        # Advertir si algún jugador no jugó tiempo
+        jugadores_sin_tiempo = [
+            j["nombre"] for j in jugadores if j["llegada"] == j["salida"]
+        ]
+        if jugadores_sin_tiempo:
             print(
-                f"Error: {jugador['nombre']} tiene hora de llegada mayor que la de salida."
+                "Advertencia: Los siguientes jugadores no tienen tiempo jugado (llegada = salida):"
             )
-            return
-        if jugador["salida"] > hora_fin:
+            for nombre in jugadores_sin_tiempo:
+                print(f"- {nombre.upper()}")
+            seguir = input("¿Deseas continuar igual? (s/n): ").strip().lower()
+            if seguir != "s":
+                continue
+
+        for jugador in jugadores:
+            if jugador["llegada"] > jugador["salida"]:
+                print(
+                    f"Error: {jugador['nombre']} tiene hora de llegada mayor que la de salida."
+                )
+                break
+            if jugador["salida"] > hora_fin:
+                print(
+                    f"Advertencia: {jugador['nombre']} tiene hora de salida después del fin de la cancha. Se ajustará a {hora_fin}."
+                )
+                jugador["salida"] = hora_fin
+
+        lista_pagos, pagos_detallados = calcular_pagos(
+            jugadores, monto_total, hora_inicio, hora_fin
+        )
+
+        # Validar suma de tiempos
+        suma_tiempos = sum(p["tiempo"] for p in lista_pagos)
+        if suma_tiempos == 0:
             print(
-                f"Advertencia: {jugador['nombre']} tiene hora de salida después del fin de la cancha. Se ajustará a {hora_fin}."
+                "Error: La suma de tiempos jugados es cero. Debes ingresar datos válidos."
             )
-            jugador["salida"] = hora_fin
-    lista_pagos, pagos_detallados = calcular_pagos(
-        jugadores, monto_total, hora_inicio, hora_fin
-    )
-    print("\n--- Pagos ---")
-    mostrar_pagos(lista_pagos, hora_inicio, hora_fin, pagos_detallados)
+            continue
+
+        print("\n--- Pagos ---")
+        mostrar_pagos(lista_pagos, hora_inicio, hora_fin, pagos_detallados)
+        break
 
 
 if __name__ == "__main__":
