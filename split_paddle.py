@@ -62,24 +62,75 @@ def pedir_hora_jugador(nombre_jugador, hora_inicio_cancha=None, hora_fin_cancha=
     """
     Solicita la hora de llegada y salida para un jugador, validando que la salida no sea menor que la llegada
     y que no exceda la hora de fin de la cancha si se proporciona.
+    Si la hora de llegada es igual a la de inicio de cancha, o la de salida igual a la de fin de cancha,
+    se toma automáticamente ese valor y no se solicita al usuario, salvo que el usuario quiera ingresar un valor distinto.
     """
-    hora_llegada = pedir_float(
-        f"Hora in de {nombre_jugador}",
-        minimo=hora_inicio_cancha,
-        maximo=hora_fin_cancha,
-        flexible_hora=True,
-    )
-    while True:
-        hora_salida = pedir_float(
-            f"Hora out de {nombre_jugador}",
-            minimo=hora_llegada,
+    # Hora de llegada
+    if hora_inicio_cancha is not None:
+        usar_inicio = (
+            input(
+                f"{nombre_jugador.upper()} ¿Llegó exactamente al inicio de la cancha ({hora_inicio_cancha})? (s/n): "
+            )
+            .strip()
+            .lower()
+        )
+        if usar_inicio == "s":
+            hora_llegada = hora_inicio_cancha
+        else:
+            hora_llegada = pedir_float(
+                f"Hora in de {nombre_jugador}",
+                minimo=hora_inicio_cancha,
+                maximo=hora_fin_cancha,
+                flexible_hora=True,
+            )
+    else:
+        hora_llegada = pedir_float(
+            f"Hora in de {nombre_jugador}",
+            minimo=hora_inicio_cancha,
             maximo=hora_fin_cancha,
             flexible_hora=True,
         )
-        if hora_salida < hora_llegada:
-            print("Error: La hora de salida no puede ser menor que la hora de llegada.")
+
+    # Hora de salida
+    if hora_fin_cancha is not None:
+        usar_fin = (
+            input(
+                f"{nombre_jugador.upper()} ¿Se fue exactamente al final de la cancha ({hora_fin_cancha})? (s/n): "
+            )
+            .strip()
+            .lower()
+        )
+        if usar_fin == "s":
+            hora_salida = hora_fin_cancha
         else:
-            break
+            while True:
+                hora_salida = pedir_float(
+                    f"Hora out de {nombre_jugador}",
+                    minimo=hora_llegada,
+                    maximo=hora_fin_cancha,
+                    flexible_hora=True,
+                )
+                if hora_salida < hora_llegada:
+                    print(
+                        "Error: La hora de salida no puede ser menor que la hora de llegada."
+                    )
+                else:
+                    break
+    else:
+        while True:
+            hora_salida = pedir_float(
+                f"Hora out de {nombre_jugador}",
+                minimo=hora_llegada,
+                maximo=hora_fin_cancha,
+                flexible_hora=True,
+            )
+            if hora_salida < hora_llegada:
+                print(
+                    "Error: La hora de salida no puede ser menor que la hora de llegada."
+                )
+            else:
+                break
+
     return hora_llegada, hora_salida
 
 
