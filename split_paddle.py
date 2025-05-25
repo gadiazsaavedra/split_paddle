@@ -298,17 +298,24 @@ def mostrar_pagos(
     max_tiempo = max(pago["tiempo"] for pago in lista_pagos)
     min_tiempo = min(pago["tiempo"] for pago in lista_pagos)
     max_nombre = max(len(p["nombre"]) for p in lista_pagos)
+    # Ajustar ancho para columnas de pago y horas
+    ancho_pago = max(
+        12, max(len(f"{p['pago']:,.0f}".replace(",", ".")) for p in lista_pagos) + 2
+    )
+    ancho_horas = max(5, max(len(f"{p['tiempo']:.2f}") for p in lista_pagos))
+
     print("\n=== RESUMEN ===")
-    print(f"{'JUGADOR'.ljust(max_nombre)} | {'PAGO':>12} | {'HORAS':>5}")
-    print("-" * (max_nombre + 23))
+    print(
+        f"{'JUGADOR'.ljust(max_nombre)} | {'PAGO':>{ancho_pago}} | {'HORAS':>{ancho_horas}}"
+    )
+    print("-" * (max_nombre + ancho_pago + ancho_horas + 7))
 
     suma_pagos = 0
 
     for pago in lista_pagos:
         nombre = pago["nombre"].upper().ljust(max_nombre)
-        # Formatea el pago con separador de miles
-        monto = f"${pago['pago']:,.0f}".replace(",", ".").rjust(12)
-        horas = f"{pago['tiempo']:.2f}".rjust(5)
+        monto = f"${pago['pago']:,.0f}".replace(",", ".").rjust(ancho_pago)
+        horas = f"{pago['tiempo']:.2f}".rjust(ancho_horas)
         suma_pagos += pago["pago"]
 
         # Colores para el que más y menos jugó
@@ -323,7 +330,7 @@ def mostrar_pagos(
             marca = ""
         print(f"{color}{nombre} | {monto} | {horas}{marca}{COLOR_RESET}")
 
-    print("-" * (max_nombre + 23))
+    print("-" * (max_nombre + ancho_pago + ancho_horas + 7))
     if hora_inicio is not None and hora_fin is not None:
         total_horas_cancha = hora_fin - hora_inicio
         horas = int(total_horas_cancha)
