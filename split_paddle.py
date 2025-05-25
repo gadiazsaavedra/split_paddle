@@ -38,19 +38,10 @@ def pedir_float(mensaje, minimo=None, maximo=None, flexible_hora=False):
     """
     Solicita al usuario un número flotante por consola, validando rango.
     Si flexible_hora=True, permite formatos de hora flexibles y los convierte a decimal.
-
-    Args:
-        mensaje (str): Mensaje a mostrar al usuario.
-        minimo (float, optional): Valor mínimo aceptado (inclusive). Si es None, no hay mínimo.
-        maximo (float, optional): Valor máximo aceptado (inclusive). Si es None, no hay máximo.
-        flexible_hora (bool, optional): Si es True, permite formatos de hora flexibles.
-
-    Returns:
-        float: El valor ingresado por el usuario, validado.
+    No muestra ejemplos ni rangos en el mensaje.
     """
-    ejemplos = "Ejemplos válidos: 18.5, 18:30, 18,30, 18.30"
     while True:
-        valor_ingresado = input(f"{mensaje} {ejemplos if flexible_hora else ''}\n> ")
+        valor_ingresado = input(f"{mensaje}\n> ")
         try:
             if flexible_hora:
                 valor = parsear_hora(valor_ingresado)
@@ -67,24 +58,23 @@ def pedir_float(mensaje, minimo=None, maximo=None, flexible_hora=False):
             print(f"Error: {e}")
 
 
-def pedir_hora_jugador(nombre_jugador, hora_fin_cancha=None):
+def pedir_hora_jugador(nombre_jugador, hora_inicio_cancha=None, hora_fin_cancha=None):
     """
     Solicita la hora de llegada y salida para un jugador, validando que la salida no sea menor que la llegada
     y que no exceda la hora de fin de la cancha si se proporciona.
-
-    Args:
-        nombre_jugador (str): Nombre del jugador.
-        hora_fin_cancha (float, optional): Hora máxima de salida permitida.
-
-    Returns:
-        tuple: (hora_llegada, hora_salida)
     """
     hora_llegada = pedir_float(
-        f"Hora in de {nombre_jugador}", minimo=0, maximo=hora_fin_cancha, flexible_hora=True
+        f"Hora in de {nombre_jugador}",
+        minimo=hora_inicio_cancha,
+        maximo=hora_fin_cancha,
+        flexible_hora=True,
     )
     while True:
         hora_salida = pedir_float(
-            f"Hora out de {nombre_jugador}", minimo=hora_llegada, maximo=hora_fin_cancha, flexible_hora=True
+            f"Hora out de {nombre_jugador}",
+            minimo=hora_llegada,
+            maximo=hora_fin_cancha,
+            flexible_hora=True,
         )
         if hora_salida < hora_llegada:
             print("Error: La hora de salida no puede ser menor que la hora de llegada.")
@@ -93,7 +83,7 @@ def pedir_hora_jugador(nombre_jugador, hora_fin_cancha=None):
     return hora_llegada, hora_salida
 
 
-def pedir_jugadores(hora_fin_cancha=None):
+def pedir_jugadores(hora_inicio_cancha=None, hora_fin_cancha=None):
     """
     Solicita al usuario los datos de los jugadores (nombre, hora de llegada y salida).
 
@@ -105,7 +95,9 @@ def pedir_jugadores(hora_fin_cancha=None):
         nombre_jugador = input("Nombre del jugador (deja vacío para terminar): ")
         if not nombre_jugador:
             break
-        hora_llegada, hora_salida = pedir_hora_jugador(nombre_jugador, hora_fin_cancha)
+        hora_llegada, hora_salida = pedir_hora_jugador(
+            nombre_jugador, hora_inicio_cancha, hora_fin_cancha
+        )
         jugadores.append(
             {"nombre": nombre_jugador, "llegada": hora_llegada, "salida": hora_salida}
         )
@@ -190,7 +182,7 @@ def mostrar_pagos(lista_pagos, hora_inicio=None, hora_fin=None, pagos_detallados
                 destacado = " (más tiempo)"
             elif pago["tiempo"] == min_tiempo and max_tiempo != min_tiempo:
                 destacado = " (menos tiempo)"
-            print(f"Jugador: {pago['nombre']}{destacado}")
+            print(f"Jugador: {pago['nombre'].upper()}{destacado}")
             print(f"  Pago: ${pago['pago']:,}".replace(",", "."))
             print(f"  Horas jugadas: {pago['tiempo']:.2f}")
             # Mostrar pago exacto antes de redondear si está disponible
@@ -220,7 +212,9 @@ def main():
         print("Error: La hora de fin no puede ser menor que la hora de inicio.")
         return
     monto_total = pedir_float("Total a pagar ($): ", minimo=0.01)
-    jugadores = pedir_jugadores(hora_fin_cancha=hora_fin)
+    jugadores = pedir_jugadores(
+        hora_inicio_cancha=hora_inicio, hora_fin_cancha=hora_fin
+    )
     if not jugadores:
         print("Error: Debes ingresar al menos un jugador.")
         return
