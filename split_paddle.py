@@ -4,34 +4,30 @@ import re
 
 def parsear_hora(valor):
     """
-    Convierte una entrada de hora flexible (18.5, 18:30, 18,30, 18.30) a decimal de horas.
+    Convierte una entrada de hora flexible a decimal de horas.
+    Permite: 18.5, 18.50, 18:30, 18,30, 18 (asume minutos=0 si solo hora).
+    Acepta punto, coma o dos puntos como separador.
     """
     valor = valor.strip().replace(",", ".")
-    # Si es formato 18.5 o 18.30 (con punto decimal)
-    if re.match(r"^\d{1,2}\.\d{1,2}$", valor):
-        partes = valor.split(".")
-        horas = int(partes[0])
-        minutos = int(partes[1])
-        if minutos >= 60:
-            raise ValueError("Los minutos deben ser menores a 60.")
-        return horas + minutos / 60
-    # Si es formato 18:30
-    elif ":" in valor:
-        partes = valor.split(":")
-        horas = int(partes[0])
-        minutos = int(partes[1])
-        if minutos >= 60:
-            raise ValueError("Los minutos deben ser menores a 60.")
-        return horas + minutos / 60
     # Si es solo un número entero (ej: 18)
-    elif valor.isdigit():
+    if valor.isdigit():
         return float(valor)
+    # Si es formato 18.5, 18.50, 18.30, 18:30
+    if ":" in valor:
+        partes = valor.split(":")
+    elif "." in valor:
+        partes = valor.split(".")
     else:
-        # Intentar convertir directamente (por si es 18.5)
-        try:
-            return float(valor)
-        except Exception:
-            raise ValueError("Formato de hora no reconocido.")
+        partes = [valor]
+
+    try:
+        horas = int(partes[0])
+        minutos = int(partes[1]) if len(partes) > 1 else 0
+        if minutos >= 60:
+            raise ValueError("Los minutos deben ser menores a 60.")
+        return horas + minutos / 60
+    except Exception:
+        raise ValueError("Formato de hora no reconocido.")
 
 
 def pedir_float(mensaje, minimo=None, maximo=None, flexible_hora=False):
