@@ -1,22 +1,61 @@
 import math
+import re
 
 
-def pedir_float(mensaje, minimo=None, maximo=None):
+def parsear_hora(valor):
+    """
+    Convierte una entrada de hora flexible (18.5, 18:30, 18,30, 18.30) a decimal de horas.
+    """
+    valor = valor.strip().replace(",", ".")
+    # Si es formato 18.5 o 18.30 (con punto decimal)
+    if re.match(r"^\d{1,2}\.\d{1,2}$", valor):
+        partes = valor.split(".")
+        horas = int(partes[0])
+        minutos = int(partes[1])
+        if minutos >= 60:
+            raise ValueError("Los minutos deben ser menores a 60.")
+        return horas + minutos / 60
+    # Si es formato 18:30
+    elif ":" in valor:
+        partes = valor.split(":")
+        horas = int(partes[0])
+        minutos = int(partes[1])
+        if minutos >= 60:
+            raise ValueError("Los minutos deben ser menores a 60.")
+        return horas + minutos / 60
+    # Si es solo un número entero (ej: 18)
+    elif valor.isdigit():
+        return float(valor)
+    else:
+        # Intentar convertir directamente (por si es 18.5)
+        try:
+            return float(valor)
+        except Exception:
+            raise ValueError("Formato de hora no reconocido.")
+
+
+def pedir_float(mensaje, minimo=None, maximo=None, flexible_hora=False):
     """
     Solicita al usuario un número flotante por consola, validando rango.
+    Si flexible_hora=True, permite formatos de hora flexibles y los convierte a decimal.
 
     Args:
         mensaje (str): Mensaje a mostrar al usuario.
         minimo (float, optional): Valor mínimo aceptado (inclusive). Si es None, no hay mínimo.
         maximo (float, optional): Valor máximo aceptado (inclusive). Si es None, no hay máximo.
+        flexible_hora (bool, optional): Si es True, permite formatos de hora flexibles.
 
     Returns:
         float: El valor ingresado por el usuario, validado.
     """
+    ejemplos = "Ejemplos válidos: 18.5, 18:30, 18,30, 18.30"
     while True:
-        valor_ingresado = input(mensaje)
+        valor_ingresado = input(f"{mensaje} {ejemplos if flexible_hora else ''}\n> ")
         try:
-            valor = float(valor_ingresado)
+            if flexible_hora:
+                valor = parsear_hora(valor_ingresado)
+            else:
+                valor = float(valor_ingresado.replace(",", "."))
             if minimo is not None and valor < minimo:
                 print(f"Error: El valor debe ser mayor o igual a {minimo}.")
                 continue
@@ -24,8 +63,8 @@ def pedir_float(mensaje, minimo=None, maximo=None):
                 print(f"Error: El valor debe ser menor o igual a {maximo}.")
                 continue
             return valor
-        except ValueError:
-            print("Error: Por favor, ingresa un número válido.")
+        except Exception as e:
+            print(f"Error: {e}")
 
 
 def pedir_hora_jugador(nombre_jugador, hora_fin_cancha=None):
@@ -41,15 +80,11 @@ def pedir_hora_jugador(nombre_jugador, hora_fin_cancha=None):
         tuple: (hora_llegada, hora_salida)
     """
     hora_llegada = pedir_float(
-        f"Hora in de {nombre_jugador} (ej: 18.0): ",
-        minimo=0,
-        maximo=hora_fin_cancha,
+        f"Hora in de {nombre_jugador}", minimo=0, maximo=hora_fin_cancha, flexible_hora=True
     )
     while True:
         hora_salida = pedir_float(
-            f"Hora out de {nombre_jugador} (ej: 20.0): ",
-            minimo=hora_llegada,
-            maximo=hora_fin_cancha,
+            f"Hora out de {nombre_jugador}", minimo=hora_llegada, maximo=hora_fin_cancha, flexible_hora=True
         )
         if hora_salida < hora_llegada:
             print("Error: La hora de salida no puede ser menor que la hora de llegada.")
