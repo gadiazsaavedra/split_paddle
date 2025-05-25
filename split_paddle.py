@@ -34,24 +34,36 @@ def pedir_float(mensaje, minimo=None, maximo=None, flexible_hora=False):
     """
     Solicita al usuario un número flotante por consola, validando rango.
     Si flexible_hora=True, permite formatos de hora flexibles y los convierte a decimal.
-    Mensajes cortos y claros.
+    Permite ingresar '?' para mostrar ayuda rápida.
     """
+    ayuda = (
+        "\nEjemplos válidos:\n"
+        "  18.5   → 18:30\n"
+        "  18.50  → 18:50\n"
+        "  18:30  → 18:30\n"
+        "  18,30  → 18:30\n"
+        "  18     → 18:00\n"
+        "Usa punto, coma o dos puntos como separador.\n"
+    )
     while True:
-        valor_ingresado = input(f"{mensaje}\n> ")
+        valor_ingresado = input(f"{mensaje}\n> ").strip()
+        if valor_ingresado == "?":
+            print(ayuda)
+            continue
         try:
             if flexible_hora:
                 valor = parsear_hora(valor_ingresado)
             else:
                 valor = float(valor_ingresado.replace(",", "."))
             if minimo is not None and valor < minimo:
-                print(f"Error: mínimo {minimo}")
+                print(f"Error: mínimo {minimo}. Escribe '?' para ver ejemplos.")
                 continue
             if maximo is not None and valor > maximo:
-                print(f"Error: máximo {maximo}")
+                print(f"Error: máximo {maximo}. Escribe '?' para ver ejemplos.")
                 continue
             return valor
-        except Exception as e:
-            print("Formato inválido. Ej: 18.15 o 18:15")
+        except Exception:
+            print("Formato inválido. Escribe '?' para ver ejemplos y sugerencias.")
 
 
 def pedir_hora_jugador(nombre_jugador, hora_inicio_cancha=None, hora_fin_cancha=None):
@@ -270,42 +282,72 @@ def calcular_pagos(jugadores, monto_total, hora_inicio, hora_fin):
     return pagos_redondeados, pagos_detallados
 
 
-def mostrar_pagos(lista_pagos, hora_inicio=None, hora_fin=None, pagos_detallados=None):
+def mostrar_pagos(
+    lista_pagos,
+    hora_inicio=None,
+    hora_fin=None,
+    pagos_detallados=None,
+    monto_total=None,
+):
     """
     Muestra los pagos por pantalla en formato breve y claro, adaptado a pantallas chicas.
-    Tabla simple y alineada, resaltando el jugador que más y menos jugó.
+    Tabla simple y alineada, resaltando el jugador que más y menos jugó con colores si la terminal lo permite.
+    Muestra el total recaudado, total de horas jugadas y advierte si hay diferencia por redondeo.
     """
+    # ANSI colors
+    COLOR_RESET = "\033[0m"
+    COLOR_GREEN = "\033[92m"
+    COLOR_RED = "\033[91m"
+    COLOR_YELLOW = "\033[93m"
+
     if not lista_pagos:
         print("Sin jugadores.")
         return
 
-    # Encontrar máximo y mínimo tiempo jugado
     max_tiempo = max(pago["tiempo"] for pago in lista_pagos)
     min_tiempo = min(pago["tiempo"] for pago in lista_pagos)
-
-    # Calcular ancho máximo para nombres
     max_nombre = max(len(p["nombre"]) for p in lista_pagos)
     print("\n=== RESUMEN ===")
     print(f"{'JUGADOR'.ljust(max_nombre)} | {'PAGO':>6} | {'HORAS':>5}")
     print("-" * (max_nombre + 17))
+
+    suma_pagos = 0
+    suma_horas = 0
+
     for pago in lista_pagos:
         nombre = pago["nombre"].upper().ljust(max_nombre)
         monto = f"${pago['pago']}".rjust(6)
         horas = f"{pago['tiempo']:.2f}".rjust(5)
-        # Resaltar el que más y menos jugó
+        suma_pagos += pago["pago"]
+        suma_horas += pago["tiempo"]
+
+        # Colores para el que más y menos jugó
         if pago["tiempo"] == max_tiempo and max_tiempo != min_tiempo:
+            color = COLOR_GREEN
             marca = " << MÁS"
         elif pago["tiempo"] == min_tiempo and max_tiempo != min_tiempo:
+            color = COLOR_RED
             marca = " << MENOS"
         else:
+            color = COLOR_RESET
             marca = ""
-        print(f"{nombre} | {monto} | {horas}{marca}")
+        print(f"{color}{nombre} | {monto} | {horas}{marca}{COLOR_RESET}")
+
+    print("-" * (max_nombre + 17))
     if hora_inicio is not None and hora_fin is not None:
         total_horas_cancha = hora_fin - hora_inicio
         horas = int(total_horas_cancha)
         minutos = int(round((total_horas_cancha - horas) * 60))
-        print("-" * (max_nombre + 17))
         print(f"Cancha: {horas}h {minutos}min ({total_horas_cancha:.2f}h)")
+
+    print(f"Total recaudado: ${suma_pagos}")
+    print(f"Total horas jugadas: {suma_horas:.2f}")
+
+    # Advertencia si la suma de pagos no coincide exactamente con el monto total
+    if monto_total is not None and suma_pagos != round(monto_total):
+        print(
+            f"{COLOR_YELLOW}Advertencia: La suma de pagos (${suma_pagos}) no coincide con el monto total (${monto_total}).{COLOR_RESET}"
+        )
 
 
 def main():
@@ -369,7 +411,7 @@ def main():
             continue
 
         print("\n--- Pagos ---")
-        mostrar_pagos(lista_pagos, hora_inicio, hora_fin, pagos_detallados)
+        mostrar_pagos(lista_pagos, hora_inicio, hora_fin, pagos_detallados, monto_total)
         break
 
 
