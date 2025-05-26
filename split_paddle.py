@@ -356,9 +356,16 @@ def main():
     """
     print("=== Paddle Split ===")
     while True:
-        hora_inicio = pedir_float("Hora de inicio de la cancha (ej: 18.0): ", minimo=0)
+        # Permitir formatos flexibles para hora de inicio y fin de cancha
+        hora_inicio = pedir_float(
+            "Hora de inicio de la cancha (ej: 18.0, 18:30, 18,5, 18.5, 18,30): ",
+            minimo=0,
+            flexible_hora=True,
+        )
         hora_fin = pedir_float(
-            "Hora de fin de la cancha (ej: 20.0): ", minimo=hora_inicio
+            "Hora de fin de la cancha (ej: 20.0, 20:30, 20,5, 20.5, 20,30): ",
+            minimo=hora_inicio,
+            flexible_hora=True,
         )
         if hora_fin < hora_inicio:
             print("Error: La hora de fin no puede ser menor que la hora de inicio.")
