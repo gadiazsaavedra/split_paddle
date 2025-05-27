@@ -32,15 +32,16 @@ def parsear_hora(valor):
 
 def pedir_float(mensaje, minimo=None, maximo=None, flexible_hora=False):
     """
-    Solicita un número flotante o una hora flexible, con ayuda rápida y mensajes cortos.
+    Solicita un número flotante en formato decimal (ej: 18.0, 18.25, 18.5, 18.75).
+    No acepta otros formatos como 18:30 ni 18,30.
     """
     ayuda = (
-        "\nEjemplos:\n"
+        "\nEjemplos válidos:\n"
+        "  18.0   → 18:00\n"
+        "  18.25  → 18:15\n"
         "  18.5   → 18:30\n"
-        "  18:30  → 18:30\n"
-        "  18,30  → 18:30\n"
-        "  18     → 18:00\n"
-        "Usa punto, coma o dos puntos como separador.\n"
+        "  18.75  → 18:45\n"
+        "Solo se acepta el punto como separador decimal.\n"
     )
     while True:
         valor_ingresado = input(f"{mensaje}\n> ").strip()
@@ -48,15 +49,23 @@ def pedir_float(mensaje, minimo=None, maximo=None, flexible_hora=False):
             print(ayuda)
             continue
         try:
-            if flexible_hora:
-                valor = parsear_hora(valor_ingresado)
-            else:
-                valor = float(valor_ingresado.replace(",", "."))
+            # Solo acepta punto como separador decimal
+            if "," in valor_ingresado or ":" in valor_ingresado:
+                raise ValueError
+            valor = float(valor_ingresado)
             if minimo is not None and valor < minimo:
                 print(f"Error: mínimo {minimo}")
                 continue
             if maximo is not None and valor > maximo:
                 print(f"Error: máximo {maximo}")
+                continue
+            # Validar que los decimales sean solo .0, .25, .5, .75
+            decimales_validos = {0.0, 0.25, 0.5, 0.75}
+            parte_decimal = round(valor % 1, 2)
+            if parte_decimal not in decimales_validos:
+                print(
+                    "Solo se permiten decimales .0, .25, .5 o .75 (ej: 18.0, 18.25, 18.5, 18.75)"
+                )
                 continue
             return valor
         except Exception:
