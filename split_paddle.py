@@ -32,16 +32,20 @@ def parsear_hora(valor):
 
 def pedir_float(mensaje, minimo=None, maximo=None, flexible_hora=False):
     """
-    Solicita un número flotante en formato decimal (ej: 18.0, 18.25, 18.5, 18.75).
-    No acepta otros formatos como 18:30 ni 18,30.
+    Solicita un número flotante en formato decimal (ej: 18.05, 18.10, 18.15, ..., 18.55).
+    Solo acepta el punto como separador decimal y minutos deben ser múltiplos de 5 (00, 05, 10, ..., 55).
     """
     ayuda = (
         "\nEjemplos válidos:\n"
-        "  18.0   → 18:00\n"
-        "  18.25  → 18:15\n"
-        "  18.5   → 18:30\n"
-        "  18.75  → 18:45\n"
-        "Solo se acepta el punto como separador decimal.\n"
+        "  18.00  → 18:00\n"
+        "  18.05  → 18:05\n"
+        "  18.10  → 18:10\n"
+        "  18.15  → 18:15\n"
+        "  18.20  → 18:20\n"
+        "  18.25  → 18:25\n"
+        "  ...\n"
+        "  18.55  → 18:55\n"
+        "Solo se acepta el punto como separador decimal y minutos múltiplos de 5.\n"
     )
     while True:
         valor_ingresado = input(f"{mensaje}\n> ").strip()
@@ -59,12 +63,12 @@ def pedir_float(mensaje, minimo=None, maximo=None, flexible_hora=False):
             if maximo is not None and valor > maximo:
                 print(f"Error: máximo {maximo}")
                 continue
-            # Validar que los decimales sean solo .0, .25, .5, .75
-            decimales_validos = {0.0, 0.25, 0.5, 0.75}
+            # Validar que los minutos sean múltiplos de 5
             parte_decimal = round(valor % 1, 2)
-            if parte_decimal not in decimales_validos:
+            minutos = int(round(parte_decimal * 100))
+            if minutos < 0 or minutos >= 60 or minutos % 5 != 0:
                 print(
-                    "Solo se permiten decimales .0, .25, .5 o .75 (ej: 18.0, 18.25, 18.5, 18.75)"
+                    "Solo se permiten minutos múltiplos de 5 (ej: 18.00, 18.05, ..., 18.55)"
                 )
                 continue
             return valor
