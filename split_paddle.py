@@ -63,111 +63,73 @@ def pedir_float(mensaje, minimo=None, maximo=None, flexible_hora=False):
             print("Formato inválido. Escribe '?' para ayuda.")
 
 
-def pedir_hora_jugador(nombre_jugador, hora_inicio_cancha=None, hora_fin_cancha=None):
+def pedir_jugadores(hora_inicio_cancha, hora_fin_cancha):
     """
-    Solicita la hora de llegada y salida para un jugador, con mensajes breves y nombres en mayúsculas.
-    Si llegada = salida, pide confirmación.
+    Carga los 4 jugadores iniciales (deben estar desde el inicio) y permite agregar más.
+    Para los 4 iniciales, llegada = hora de inicio. Permite editar antes de calcular.
     """
-    # Llegada
-    if hora_inicio_cancha is not None:
-        usar_inicio = (
+    jugadores = []
+    print("Carga los 4 jugadores iniciales (deben estar desde el inicio):")
+    for i in range(4):
+        while True:
+            nombre = input(f"Nombre jugador #{i+1}: ").strip()
+            if not nombre:
+                print("El nombre no puede estar vacío.")
+                continue
+            if any(j["nombre"].lower() == nombre.lower() for j in jugadores):
+                print("Ese nombre ya fue ingresado. Usa otro.")
+                continue
+            break
+        llegada = hora_inicio_cancha
+        hasta_el_final = (
             input(
-                f"{nombre_jugador.upper()} llegó al inicio ({hora_inicio_cancha})? (s/n): "
+                f"{nombre.upper()} ¿se queda hasta el final ({hora_fin_cancha})? (s/n): "
             )
             .strip()
             .lower()
         )
-        if usar_inicio == "s":
-            hora_llegada = hora_inicio_cancha
+        if hasta_el_final == "s":
+            salida = hora_fin_cancha
         else:
-            hora_llegada = pedir_float(
-                f"Llegada {nombre_jugador.upper()} (ej: 18.15):",
-                minimo=hora_inicio_cancha,
+            salida = pedir_float(
+                f"¿A qué hora se va {nombre.upper()}? (ej: {hora_fin_cancha}): ",
+                minimo=llegada,
                 maximo=hora_fin_cancha,
                 flexible_hora=True,
             )
-    else:
-        hora_llegada = pedir_float(
-            f"Llegada {nombre_jugador.upper()} (ej: 18.15):",
+        jugadores.append({"nombre": nombre, "llegada": llegada, "salida": salida})
+
+    print("\n¿Hay jugadores que se suman después del inicio?")
+    while True:
+        nombre = input("Nombre jugador adicional (vacío para terminar): ").strip()
+        if not nombre:
+            break
+        if any(j["nombre"].lower() == nombre.lower() for j in jugadores):
+            print("Ese nombre ya fue ingresado. Usa otro.")
+            continue
+        llegada = pedir_float(
+            f"¿A qué hora llega {nombre.upper()}? (>= {hora_inicio_cancha}): ",
             minimo=hora_inicio_cancha,
             maximo=hora_fin_cancha,
             flexible_hora=True,
         )
-
-    # Salida
-    if hora_fin_cancha is not None:
-        usar_fin = (
+        hasta_el_final = (
             input(
-                f"{nombre_jugador.upper()} se fue al final ({hora_fin_cancha})? (s/n): "
+                f"{nombre.upper()} ¿se queda hasta el final ({hora_fin_cancha})? (s/n): "
             )
             .strip()
             .lower()
         )
-        if usar_fin == "s":
-            hora_salida = hora_fin_cancha
+        if hasta_el_final == "s":
+            salida = hora_fin_cancha
         else:
-            while True:
-                hora_salida = pedir_float(
-                    f"Salida {nombre_jugador.upper()} (ej: 19.45):",
-                    minimo=hora_llegada,
-                    maximo=hora_fin_cancha,
-                    flexible_hora=True,
-                )
-                if hora_salida < hora_llegada:
-                    print("Error: salida < llegada")
-                elif hora_salida == hora_llegada:
-                    confirm = (
-                        input("Llegada y salida iguales, ¿confirmar? (s/n): ")
-                        .strip()
-                        .lower()
-                    )
-                    if confirm == "s":
-                        break
-                    else:
-                        print("Vuelve a ingresar la salida.")
-                else:
-                    break
-    else:
-        while True:
-            hora_salida = pedir_float(
-                f"Salida {nombre_jugador.upper()} (ej: 19.45):",
-                minimo=hora_llegada,
+            salida = pedir_float(
+                f"¿A qué hora se va {nombre.upper()}? (ej: {hora_fin_cancha}): ",
+                minimo=llegada,
                 maximo=hora_fin_cancha,
                 flexible_hora=True,
             )
-            if hora_salida < hora_llegada:
-                print("Error: salida < llegada")
-            elif hora_salida == hora_llegada:
-                confirm = (
-                    input("Llegada y salida iguales, ¿confirmar? (s/n): ")
-                    .strip()
-                    .lower()
-                )
-                if confirm == "s":
-                    break
-                else:
-                    print("Vuelve a ingresar la salida.")
-            else:
-                break
-
-    return hora_llegada, hora_salida
-
-
-def pedir_jugadores(hora_inicio_cancha=None, hora_fin_cancha=None):
-    """
-    Solicita los datos de los jugadores, permite edición, usa nombres en mayúsculas y evita repeticiones.
-    """
-    jugadores = []
-    while True:
-        nombre_jugador = input("Nombre jugador (vacío para terminar): ").strip()
-        if not nombre_jugador:
-            break
-        hora_llegada, hora_salida = pedir_hora_jugador(
-            nombre_jugador, hora_inicio_cancha, hora_fin_cancha
-        )
-        jugadores.append(
-            {"nombre": nombre_jugador, "llegada": hora_llegada, "salida": hora_salida}
-        )
+        jugadores.append({"nombre": nombre, "llegada": llegada, "salida": salida})
 
     # Edición fácil antes de calcular
     while jugadores:
@@ -193,21 +155,45 @@ def pedir_jugadores(hora_inicio_cancha=None, hora_fin_cancha=None):
         if not seleccionado:
             print("No encontrado.")
             continue
-        campo = input("¿Editar nombre/llegada/salida?: ").strip().lower()
+        campo = input("¿Editar nombre/llegada/salida/eliminar?: ").strip().lower()
         if campo == "nombre":
             nuevo_nombre = input("Nuevo nombre: ").strip()
-            if nuevo_nombre:
+            if nuevo_nombre and not any(
+                j["nombre"].lower() == nuevo_nombre.lower() for j in jugadores
+            ):
                 seleccionado["nombre"] = nuevo_nombre
+            else:
+                print("Nombre inválido o repetido.")
         elif campo == "llegada":
-            nuevo_llegada, _ = pedir_hora_jugador(
-                seleccionado["nombre"], hora_inicio_cancha, hora_fin_cancha
+            nuevo_llegada = pedir_float(
+                f"Nueva llegada para {seleccionado['nombre'].upper()} (ej: {hora_inicio_cancha}):",
+                minimo=hora_inicio_cancha,
+                maximo=hora_fin_cancha,
+                flexible_hora=True,
             )
-            seleccionado["llegada"] = nuevo_llegada
+            if nuevo_llegada > seleccionado["salida"]:
+                print("La llegada no puede ser después de la salida.")
+            else:
+                seleccionado["llegada"] = nuevo_llegada
         elif campo == "salida":
-            _, nuevo_salida = pedir_hora_jugador(
-                seleccionado["nombre"], hora_inicio_cancha, hora_fin_cancha
+            nuevo_salida = pedir_float(
+                f"Nueva salida para {seleccionado['nombre'].upper()} (ej: {hora_fin_cancha}):",
+                minimo=seleccionado["llegada"],
+                maximo=hora_fin_cancha,
+                flexible_hora=True,
             )
-            seleccionado["salida"] = nuevo_salida
+            if nuevo_salida < seleccionado["llegada"]:
+                print("La salida no puede ser antes de la llegada.")
+            else:
+                seleccionado["salida"] = nuevo_salida
+        elif campo == "eliminar":
+            if len(jugadores) <= 4:
+                print(
+                    "No puedes eliminar jugadores iniciales. Debe haber al menos 4 jugadores."
+                )
+            else:
+                jugadores.remove(seleccionado)
+                print("Jugador eliminado.")
         else:
             print("Campo no válido.")
     return jugadores
@@ -312,7 +298,7 @@ def mostrar_pagos(
 
     suma_pagos = 0
 
-    for pago in lista_pagos:
+    for i, pago in enumerate(lista_pagos):
         nombre = pago["nombre"].upper().ljust(max_nombre)
         monto = f"${pago['pago']:,.0f}".replace(",", ".").rjust(ancho_pago)
         horas = f"{pago['tiempo']:.2f}".rjust(ancho_horas)
@@ -329,6 +315,10 @@ def mostrar_pagos(
             color = COLOR_RESET
             marca = ""
         print(f"{color}{nombre} | {monto} | {horas}{marca}{COLOR_RESET}")
+        # Mostrar pago exacto antes de redondear si está disponible
+        if pagos_detallados:
+            pago_exact = pagos_detallados[i]["pago"]
+            print(f"    Pago exacto antes de redondear: ${pago_exact:.2f}")
 
     print("-" * (max_nombre + ancho_pago + ancho_horas + 7))
     if hora_inicio is not None and hora_fin is not None:
@@ -374,8 +364,8 @@ def main():
         jugadores = pedir_jugadores(
             hora_inicio_cancha=hora_inicio, hora_fin_cancha=hora_fin
         )
-        if not jugadores:
-            print("Error: Debes ingresar al menos un jugador.")
+        if not jugadores or len(jugadores) < 4:
+            print("Error: Debes ingresar al menos 4 jugadores.")
             continue
 
         # Advertir si algún jugador no jugó tiempo
