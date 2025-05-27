@@ -97,14 +97,14 @@ def pedir_jugadores(hora_inicio_cancha, hora_fin_cancha):
 
     print("\n¿Agregar más jugadores? (vacío para terminar)")
     while True:
-        nombre = input("Nombre: ").strip()
+        nombre = input("Nombre (vacío para terminar): ").strip()
         if not nombre:
             break
         if any(j["nombre"].lower() == nombre.lower() for j in jugadores):
             print("Nombre repetido.")
             continue
         llegada = pedir_float(
-            f"Llega {nombre.upper()} (>= {hora_inicio_cancha}): ",
+            f"Llegó {nombre.upper()} (>= {hora_inicio_cancha}): ",
             minimo=hora_inicio_cancha,
             maximo=hora_fin_cancha,
             flexible_hora=True,
@@ -123,30 +123,24 @@ def pedir_jugadores(hora_inicio_cancha, hora_fin_cancha):
             )
         jugadores.append({"nombre": nombre, "llegada": llegada, "salida": salida})
 
-    # Edición rápida antes de calcular
+    # Edición rápida antes de calcular con menú numérico
     while jugadores:
         print("\nJugadores:")
         for idx, j in enumerate(jugadores, 1):
             print(f"{idx}. {j['nombre'].upper()} {j['llegada']}→{j['salida']}")
-        opcion = input("Editar? (s/n): ").strip().lower()
-        if opcion != "s":
+        print("0. Continuar")
+        seleccion = input("Nro a editar/eliminar (0 para seguir): ").strip()
+        if seleccion == "0":
             break
-        seleccion = input("Nro o nombre: ").strip()
-        seleccionado = None
-        if seleccion.isdigit():
-            idx = int(seleccion) - 1
-            if 0 <= idx < len(jugadores):
-                seleccionado = jugadores[idx]
-        else:
-            for j in jugadores:
-                if j["nombre"].lower() == seleccion.lower():
-                    seleccionado = j
-                    break
-        if not seleccionado:
-            print("No encontrado.")
+        if not seleccion.isdigit() or not (1 <= int(seleccion) <= len(jugadores)):
+            print("Opción inválida.")
             continue
-        campo = input("¿nombre/llegada/salida/eliminar?: ").strip().lower()
-        if campo == "nombre":
+        seleccionado = jugadores[int(seleccion) - 1]
+        print(
+            f"1. Editar nombre\n2. Editar llegada\n3. Editar salida\n4. Eliminar jugador\n0. Volver"
+        )
+        accion = input("Elige opción: ").strip()
+        if accion == "1":
             nuevo_nombre = input("Nuevo nombre: ").strip()
             if nuevo_nombre and not any(
                 j["nombre"].lower() == nuevo_nombre.lower() for j in jugadores
@@ -154,7 +148,7 @@ def pedir_jugadores(hora_inicio_cancha, hora_fin_cancha):
                 seleccionado["nombre"] = nuevo_nombre
             else:
                 print("Nombre inválido o repetido.")
-        elif campo == "llegada":
+        elif accion == "2":
             nuevo_llegada = pedir_float(
                 f"Llegada {seleccionado['nombre'].upper()}: ",
                 minimo=hora_inicio_cancha,
@@ -165,7 +159,7 @@ def pedir_jugadores(hora_inicio_cancha, hora_fin_cancha):
                 print("Llegada > salida.")
             else:
                 seleccionado["llegada"] = nuevo_llegada
-        elif campo == "salida":
+        elif accion == "3":
             nuevo_salida = pedir_float(
                 f"Salida {seleccionado['nombre'].upper()}: ",
                 minimo=seleccionado["llegada"],
@@ -176,12 +170,14 @@ def pedir_jugadores(hora_inicio_cancha, hora_fin_cancha):
                 print("Salida < llegada.")
             else:
                 seleccionado["salida"] = nuevo_salida
-        elif campo == "eliminar":
+        elif accion == "4":
             if len(jugadores) <= 4:
                 print("No puedes eliminar iniciales.")
             else:
-                jugadores.remove(seleccionado)
+                jugadores.pop(int(seleccion) - 1)
                 print("Eliminado.")
+        elif accion == "0":
+            continue
         else:
             print("Opción inválida.")
     return jugadores
