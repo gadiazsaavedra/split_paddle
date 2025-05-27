@@ -1,60 +1,46 @@
-# split_paddle
-permite calcular cuanto debe pagar cada jugador
-# Paddle Split
+# Split Paddle
 
-Este programa en Python te ayuda a dividir el costo de una cancha de paddle entre varios jugadores, considerando el tiempo real que cada uno jugó. Es ideal para grupos donde los jugadores entran y salen en diferentes horarios.
+Aplicación para dividir el costo de una cancha de paddle entre jugadores según el tiempo que cada uno jugó.
 
-## ¿Cómo funciona?
+## Ejecución en AWS
 
-1. **Ingresa la hora de inicio y fin de la cancha** (en formato decimal, por ejemplo, 18.0 para 18:00, 18.5 para 18:30).
-2. **Ingresa el total a pagar** por la cancha.
-3. **Agrega los jugadores** uno por uno, indicando:
-   - Nombre
-   - Hora de llegada (formato decimal)
-   - Hora de salida (formato decimal)
-4. El programa calcula cuánto debe pagar cada jugador, proporcional al tiempo jugado, redondeando siempre hacia arriba y mostrando el tiempo jugado.
+### Opción 1: AWS EC2
 
-## Ejemplo de uso
+1. Crea una instancia EC2 en la consola de AWS
+   - Usa Amazon Linux 2023 o Ubuntu
+   - Tipo de instancia: t2.micro (capa gratuita)
+   - Configura un par de claves para SSH
 
-```
-=== Paddle Split ===
-Hora de inicio de la cancha (ej: 18.0): 18.0
-Hora de fin de la cancha (ej: 20.0): 20.0
-Total a pagar ($): 4000
-Nombre del jugador (deja vacío para terminar): Juan
-Hora de llegada de Juan (ej: 18.0): 18.0
-Hora de salida de Juan (ej: 20.0): 20.0
-Nombre del jugador (deja vacío para terminar): Pedro
-Hora de llegada de Pedro (ej: 18.5): 18.5
-Hora de salida de Pedro (ej: 20.0): 20.0
-Nombre del jugador (deja vacío para terminar): 
---- Pagos ---
-Juan: $2.286 (2.00 horas)
-Pedro: $1.714 (1.50 horas)
-```
+2. Conéctate a tu instancia:
+   ```
+   ssh -i tu-clave.pem ec2-user@tu-ip-publica
+   ```
 
-## Formato de horas
+3. Instala Python (si no está instalado):
+   ```
+   sudo yum update -y
+   sudo yum install python3 -y
+   ```
 
-- **18.0** = 18:00 hs
-- **18.5** = 18:30 hs
-- **19.25** = 19:15 hs (15 minutos = 0.25 horas)
-- **19.75** = 19:45 hs (45 minutos = 0.75 horas)
+4. Sube tu código a la instancia:
+   ```
+   scp -i tu-clave.pem split_paddle.py ec2-user@tu-ip-publica:~
+   ```
 
-Para convertir minutos a decimal:  
-`hora_decimal = hora + (minutos / 60)`
+5. Ejecuta la aplicación:
+   ```
+   python3 split_paddle.py
+   ```
 
-## Requisitos
+### Opción 2: AWS Lambda (para versión web)
 
-- Python 3.x
+Para convertir esta aplicación a una versión web que pueda ejecutarse en AWS Lambda, necesitarías:
 
-## Ejecución
+1. Crear una API con API Gateway
+2. Implementar la lógica en una función Lambda
+3. Crear una interfaz web para reemplazar las entradas por consola
 
-Abre una terminal y ejecuta:
+## Notas
 
-```bash
-python split_paddle.py
-```
-
----
-
-¡Listo! Así podrás dividir el costo de la cancha de manera justa según el tiempo jugado por cada uno.
+- La aplicación actual es interactiva por consola, por lo que funciona mejor en EC2
+- Para una versión web, se necesitaría modificar el código para eliminar las entradas por consola
