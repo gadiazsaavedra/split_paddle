@@ -142,12 +142,15 @@ def pedir_jugadores(hora_inicio_cancha, hora_fin_cancha):
         for idx, j in enumerate(jugadores, 1):
             print(f"{idx}. {j['nombre'].upper()} {j['llegada']}→{j['salida']}")
         print("0. Continuar")
-        seleccion = input("Nro a editar/eliminar (0 para seguir): ").strip()
+        seleccion = input("Nro a editar/eliminar (0 para seguir): ")
+
         if seleccion == "0":
             break
+
         if not seleccion.isdigit() or not (1 <= int(seleccion) <= len(jugadores)):
             print("Opción inválida.")
             continue
+
         seleccionado = jugadores[int(seleccion) - 1]
         print(
             f"1. Editar nombre\n2. Editar llegada\n3. Editar salida\n4. Eliminar jugador\n0. Volver"
@@ -199,13 +202,14 @@ def pedir_jugadores(hora_inicio_cancha, hora_fin_cancha):
 def calcular_pagos(jugadores, monto_total, hora_inicio, hora_fin):
     """
     Calcula el pago correspondiente a cada jugador según el tiempo jugado,
-    proporcional al tiempo jugado respecto al total de horas de cancha (hora_fin - hora_inicio).
+    proporcional al tiempo jugado respecto al tiempo total de cancha.
     """
     pagos_detallados = []
     pagos_redondeados = []
     suma_pagos_redondeados = 0
 
-    total_cancha = hora_fin - hora_inicio
+    # Tiempo total de cancha
+    tiempo_total_cancha = hora_fin - hora_inicio
 
     # Calcula el tiempo jugado por cada jugador (dentro del rango de la cancha)
     for jugador in jugadores:
@@ -214,15 +218,98 @@ def calcular_pagos(jugadores, monto_total, hora_inicio, hora_fin):
         )
         pagos_detallados.append({"nombre": jugador["nombre"], "tiempo": tiempo})
 
-    # Calcular pagos proporcionales al total de horas de cancha
+    # Calcular pagos proporcionales al tiempo total de cancha
     for i, info in enumerate(pagos_detallados):
-        if total_cancha > 0:
-            pago = monto_total * (info["tiempo"] / total_cancha)
+        if tiempo_total_cancha > 0:
+            pago = monto_total * (info["tiempo"] / tiempo_total_cancha)
         else:
             pago = 0
         pagos_detallados[i]["pago"] = pago
 
     # Redondear pagos y ajustar el último para cuadrar el total
+    for i, info in enumerate(pagos_detallados):
+        if i < len(pagos_detallados) - 1:
+            pago_redondeado = round(info["pago"])
+            pagos_redondeados.append(
+                {
+                    "nombre": info["nombre"],
+                    "pago": pago_redondeado,
+                    "tiempo": info["tiempo"],
+                }
+            )
+            suma_pagos_redondeados += pago_redondeado
+        else:
+            pago_redondeado = round(monto_total - suma_pagos_redondeados)
+            pagos_redondeados.append(
+                {
+                    "nombre": info["nombre"],
+                    "pago": pago_redondeado,
+                    "tiempo": info["tiempo"],
+                }
+            )
+    return pagos_redondeados, pagos_detallados
+
+
+def calcular_pagos_por_intervalos(jugadores, monto_total, hora_inicio, hora_fin):
+    """
+    Calcula el pago de cada jugador prorrateando por intervalos según la cantidad de jugadores presentes en cada tramo.
+    """
+    # 1. Obtener todos los puntos de cambio (llegadas y salidas)
+    eventos = []
+    for j in jugadores:
+        eventos.append((j["llegada"], "in", j["nombre"]))
+        eventos.append((j["salida"], "out", j["nombre"]))
+    eventos = sorted(eventos)
+
+    # 2. Recorrer los intervalos y calcular el costo de cada uno
+    intervalos = []
+    jugadores_en_cancha = set()
+    ultimo_tiempo = hora_inicio
+    for tiempo, tipo, nombre in eventos:
+        if tiempo > ultimo_tiempo and jugadores_en_cancha:
+            intervalo = {
+                "inicio": ultimo_tiempo,
+                "fin": tiempo,
+                "duracion": tiempo - ultimo_tiempo,
+                "jugadores": jugadores_en_cancha.copy(),
+            }
+            intervalos.append(intervalo)
+        if tipo == "in":
+            jugadores_en_cancha.add(nombre)
+        else:
+            jugadores_en_cancha.discard(nombre)
+        ultimo_tiempo = tiempo
+
+    # 3. Calcular el costo por hora
+    duracion_total = hora_fin - hora_inicio
+    costo_por_hora = monto_total / duracion_total if duracion_total > 0 else 0
+
+    # 4. Inicializar pagos
+    pagos = {j["nombre"]: 0 for j in jugadores}
+
+    # 5. Sumar a cada jugador lo que le corresponde por cada intervalo
+    for intervalo in intervalos:
+        if not intervalo["jugadores"]:
+            continue
+        costo_intervalo = intervalo["duracion"] * costo_por_hora
+        pago_por_jugador = costo_intervalo / len(intervalo["jugadores"])
+        for nombre in intervalo["jugadores"]:
+            pagos[nombre] += pago_por_jugador
+
+    # 6. Preparar la salida en el mismo formato que antes
+    pagos_detallados = []
+    pagos_redondeados = []
+    suma_pagos_redondeados = 0
+    nombres_orden = [j["nombre"] for j in jugadores]
+    for nombre in nombres_orden:
+        pago = pagos[nombre]
+        tiempo = sum(
+            intervalo["duracion"]
+            for intervalo in intervalos
+            if nombre in intervalo["jugadores"]
+        )
+        pagos_detallados.append({"nombre": nombre, "pago": pago, "tiempo": tiempo})
+
     for i, info in enumerate(pagos_detallados):
         if i < len(pagos_detallados) - 1:
             pago_redondeado = round(info["pago"])
@@ -346,7 +433,7 @@ def main():
                 )
                 jugador["salida"] = hora_fin
 
-        lista_pagos, pagos_detallados = calcular_pagos(
+        lista_pagos, pagos_detallados = calcular_pagos_por_intervalos(
             jugadores, monto_total, hora_inicio, hora_fin
         )
 
