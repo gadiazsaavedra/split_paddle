@@ -198,49 +198,39 @@ def pedir_jugadores(hora_inicio_cancha, hora_fin_cancha):
 
 def calcular_pagos(jugadores, monto_total, hora_inicio, hora_fin):
     """
-    Calcula el pago correspondiente a cada jugador según el tiempo jugado.
-    No usa input() ni print().
-
-    Args:
-        jugadores (list): Lista de diccionarios con los datos de cada jugador.
-        monto_total (float): Monto total a repartir.
-        hora_inicio (float): Hora de inicio de la cancha.
-        hora_fin (float): Hora de fin de la cancha.
-
-    Returns:
-        list: Lista de diccionarios con el nombre, pago y tiempo jugado de cada jugador.
+    Calcula el pago correspondiente a cada jugador según el tiempo jugado,
+    proporcional al tiempo jugado respecto al total de horas de cancha (hora_fin - hora_inicio).
     """
-    tiempos_jugados = []
-    for jugador in jugadores:
-        # Calcula el tiempo jugado por cada jugador dentro del rango permitido
-        tiempo = max(
-            0, min(jugador["salida"], hora_fin) - max(jugador["llegada"], hora_inicio)
-        )
-        tiempos_jugados.append(tiempo)
-    suma_tiempos = sum(tiempos_jugados)
     pagos_detallados = []
     pagos_redondeados = []
     suma_pagos_redondeados = 0
 
-    # Calcula el pago proporcional para cada jugador
-    for i, jugador in enumerate(jugadores):
-        if suma_tiempos > 0:
-            pago = monto_total * (tiempos_jugados[i] / suma_tiempos)
+    total_cancha = hora_fin - hora_inicio
+
+    # Calcula el tiempo jugado por cada jugador (dentro del rango de la cancha)
+    for jugador in jugadores:
+        tiempo = max(
+            0, min(jugador["salida"], hora_fin) - max(jugador["llegada"], hora_inicio)
+        )
+        pagos_detallados.append({"nombre": jugador["nombre"], "tiempo": tiempo})
+
+    # Calcular pagos proporcionales al total de horas de cancha
+    for i, info in enumerate(pagos_detallados):
+        if total_cancha > 0:
+            pago = monto_total * (info["tiempo"] / total_cancha)
         else:
             pago = 0
-        pagos_detallados.append(
-            {"nombre": jugador["nombre"], "pago": pago, "tiempo": tiempos_jugados[i]}
-        )
+        pagos_detallados[i]["pago"] = pago
 
-    # Redondea los pagos y ajusta el último para que la suma sea exacta
-    for i, pago_info in enumerate(pagos_detallados):
+    # Redondear pagos y ajustar el último para cuadrar el total
+    for i, info in enumerate(pagos_detallados):
         if i < len(pagos_detallados) - 1:
-            pago_redondeado = round(pago_info["pago"])
+            pago_redondeado = round(info["pago"])
             pagos_redondeados.append(
                 {
-                    "nombre": pago_info["nombre"],
+                    "nombre": info["nombre"],
                     "pago": pago_redondeado,
-                    "tiempo": pago_info["tiempo"],
+                    "tiempo": info["tiempo"],
                 }
             )
             suma_pagos_redondeados += pago_redondeado
@@ -248,9 +238,9 @@ def calcular_pagos(jugadores, monto_total, hora_inicio, hora_fin):
             pago_redondeado = round(monto_total - suma_pagos_redondeados)
             pagos_redondeados.append(
                 {
-                    "nombre": pago_info["nombre"],
+                    "nombre": info["nombre"],
                     "pago": pago_redondeado,
-                    "tiempo": pago_info["tiempo"],
+                    "tiempo": info["tiempo"],
                 }
             )
     return pagos_redondeados, pagos_detallados
@@ -361,7 +351,7 @@ def main():
         )
 
         # Validar suma de tiempos
-        suma_tiempos = sum(p["tiempo"] for p in lista_pagos)
+        suma_tiempos = sum(info["tiempo"] for info in pagos_detallados)
         if suma_tiempos == 0:
             print(
                 "Error: La suma de tiempos jugados es cero. Debes ingresar datos válidos."
