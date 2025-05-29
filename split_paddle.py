@@ -4,8 +4,8 @@ import re
 
 def parsear_hora(valor):
     """
-    Convierte una entrada de hora en formato decimal (ej: 18.10, 18.15, 18.30, 18.55, 18)
-    a decimal de horas. 18.10 = 18hs 10min, 18.30 = 18hs 30min, etc.
+    Convierte una entrada de hora en formato decimal (ej: 18.25, 18.5, 18.75, 18)
+    a decimal de horas. 18.25 = 18hs 15min, 18.5 = 18hs 30min, 18.75 = 18hs 45min, 18 = 18hs.
     Solo acepta el punto como separador decimal.
     """
     valor = valor.strip()
@@ -17,12 +17,21 @@ def parsear_hora(valor):
         partes = valor.split(".")
         horas = int(partes[0])
         minutos = int(partes[1]) if len(partes) > 1 else 0
+        # Si los minutos son 25, 5, 50, 75, los convertimos a minutos reales
+        if minutos == 25:
+            minutos = 15
+        elif minutos == 5:
+            minutos = 3
+        elif minutos == 50:
+            minutos = 30
+        elif minutos == 75:
+            minutos = 45
         if minutos < 0 or minutos >= 60:
             raise ValueError("Los minutos deben estar entre 0 y 59.")
         return horas + minutos / 60
     except Exception:
         raise ValueError(
-            "Formato de hora no reconocido. Usa por ejemplo 18.15 para 18:15."
+            "Formato de hora no reconocido. Usa por ejemplo 18.25 para 18:15, 18.5 para 18:30, 18.75 para 18:45."
         )
 
 
