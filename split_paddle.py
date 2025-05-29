@@ -410,5 +410,7 @@ def main():
 
 
 if __name__ == "__main__":
-    print("Usa solo números y puntos para las horas. Ejemplo: 18.25 para 18:15, 18.5 para 18:30")
+    print(
+        "Usa solo números y puntos para las horas. Ejemplo: 18.25 para 18:15, 18.5 para 18:30"
+    )
     main()
