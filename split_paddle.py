@@ -341,12 +341,12 @@ def main():
     while True:
         # Permitir formatos flexibles para hora de inicio y fin de cancha
         hora_inicio = pedir_float(
-            "Hora de inicio de la cancha (ej: 18.0, 18:30, 18,5, 18.5, 18,30): ",
+            "Hora de inicio de la cancha (ej: 18.0, 18.25, 18.5, 18.75): ",
             minimo=0,
             flexible_hora=True,
         )
         hora_fin = pedir_float(
-            "Hora de fin de la cancha (ej: 20.0, 20:30, 20,5, 20.5, 20,30): ",
+            "Hora de fin de la cancha (ej: 20.0, 20.25, 20.5, 20.75): ",
             minimo=hora_inicio,
             flexible_hora=True,
         )
@@ -401,9 +401,14 @@ def main():
 
         print("\n--- Pagos ---")
         mostrar_pagos(lista_pagos, hora_inicio, hora_fin, pagos_detallados, monto_total)
-        break
+
+        # Preguntar si desea volver a ejecutar o salir
+        reiniciar = input("\n¿Deseas ingresar nuevos datos? (s/n): ").strip().lower()
+        if reiniciar != "s":
+            print("¡Hasta luego!")
+            break
 
 
 if __name__ == "__main__":
-    print("Usa solo números y puntos para las horas. Ejemplo: 18.5 para 18:30")
+    print("Usa solo números y puntos para las horas. Ejemplo: 18.25 para 18:15, 18.5 para 18:30")
     main()
