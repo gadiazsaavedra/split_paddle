@@ -4,30 +4,26 @@ import re
 
 def parsear_hora(valor):
     """
-    Convierte una entrada de hora flexible a decimal de horas.
-    Permite: 18.5, 18.50, 18:30, 18,30, 18 (asume minutos=0 si solo hora).
-    Acepta punto, coma o dos puntos como separador.
+    Convierte una entrada de hora en formato decimal (ej: 18.10, 18.15, 18.30, 18.55, 18)
+    a decimal de horas. 18.10 = 18hs 10min, 18.30 = 18hs 30min, etc.
+    Solo acepta el punto como separador decimal.
     """
-    valor = valor.strip().replace(",", ".")
-    # Si es solo un número entero (ej: 18)
+    valor = valor.strip()
+    if "," in valor or ":" in valor:
+        raise ValueError("Solo se acepta el punto como separador decimal.")
     if valor.isdigit():
         return float(valor)
-    # Si es formato 18.5, 18.50, 18.30, 18:30
-    if ":" in valor:
-        partes = valor.split(":")
-    elif "." in valor:
-        partes = valor.split(".")
-    else:
-        partes = [valor]
-
     try:
+        partes = valor.split(".")
         horas = int(partes[0])
         minutos = int(partes[1]) if len(partes) > 1 else 0
-        if minutos >= 60:
-            raise ValueError("Los minutos deben ser menores a 60.")
+        if minutos < 0 or minutos >= 60:
+            raise ValueError("Los minutos deben estar entre 0 y 59.")
         return horas + minutos / 60
     except Exception:
-        raise ValueError("Formato de hora no reconocido.")
+        raise ValueError(
+            "Formato de hora no reconocido. Usa por ejemplo 18.15 para 18:15."
+        )
 
 
 def pedir_float(mensaje, minimo=None, maximo=None, flexible_hora=False):
@@ -197,57 +193,6 @@ def pedir_jugadores(hora_inicio_cancha, hora_fin_cancha):
         else:
             print("Opción inválida.")
     return jugadores
-
-
-def calcular_pagos(jugadores, monto_total, hora_inicio, hora_fin):
-    """
-    Calcula el pago correspondiente a cada jugador según el tiempo jugado,
-    proporcional al tiempo jugado respecto al tiempo total de cancha.
-    """
-    pagos_detallados = []
-    pagos_redondeados = []
-    suma_pagos_redondeados = 0
-
-    # Tiempo total de cancha
-    tiempo_total_cancha = hora_fin - hora_inicio
-
-    # Calcula el tiempo jugado por cada jugador (dentro del rango de la cancha)
-    for jugador in jugadores:
-        tiempo = max(
-            0, min(jugador["salida"], hora_fin) - max(jugador["llegada"], hora_inicio)
-        )
-        pagos_detallados.append({"nombre": jugador["nombre"], "tiempo": tiempo})
-
-    # Calcular pagos proporcionales al tiempo total de cancha
-    for i, info in enumerate(pagos_detallados):
-        if tiempo_total_cancha > 0:
-            pago = monto_total * (info["tiempo"] / tiempo_total_cancha)
-        else:
-            pago = 0
-        pagos_detallados[i]["pago"] = pago
-
-    # Redondear pagos y ajustar el último para cuadrar el total
-    for i, info in enumerate(pagos_detallados):
-        if i < len(pagos_detallados) - 1:
-            pago_redondeado = round(info["pago"])
-            pagos_redondeados.append(
-                {
-                    "nombre": info["nombre"],
-                    "pago": pago_redondeado,
-                    "tiempo": info["tiempo"],
-                }
-            )
-            suma_pagos_redondeados += pago_redondeado
-        else:
-            pago_redondeado = round(monto_total - suma_pagos_redondeados)
-            pagos_redondeados.append(
-                {
-                    "nombre": info["nombre"],
-                    "pago": pago_redondeado,
-                    "tiempo": info["tiempo"],
-                }
-            )
-    return pagos_redondeados, pagos_detallados
 
 
 def calcular_pagos_por_intervalos(jugadores, monto_total, hora_inicio, hora_fin):
