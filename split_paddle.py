@@ -308,8 +308,12 @@ def mostrar_pagos(
             marca = " ★"
         elif pago["tiempo"] == min_tiempo and max_tiempo != min_tiempo:
             marca = " →"
+        # Convertir tiempo decimal a horas:minutos
+        horas = int(pago["tiempo"])
+        minutos = int(round((pago["tiempo"] - horas) * 60))
+        tiempo_str = f"{horas}:{minutos:02d}"
         print(
-            f"{pago['nombre'].upper().ljust(max_nombre)} {pago['pago']:>6.0f} {pago['tiempo']:>5.2f}{marca}"
+            f"{pago['nombre'].upper().ljust(max_nombre)} ${pago['pago']:>6.0f} {tiempo_str}{marca}"
         )
         if pagos_detallados:
             pago_exact = pagos_detallados[i]["pago"]
