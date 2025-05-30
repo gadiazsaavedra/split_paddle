@@ -1,7 +1,3 @@
-import math #eliminar esta linea
-import re
-
-
 def parsear_hora(valor):
     """
     Convierte una entrada de hora en formato decimal (ej: 18.25, 18.5, 18.75, 18)
