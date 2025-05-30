@@ -127,16 +127,12 @@ st.info(
 with st.form("datos_cancha"):
     col1, col2, col3 = st.columns(3)
     with col1:
-        hora_inicio_str = st.text_input(
-            "Hora de inicio (ej: 18.0, 18.25, 18.5, 18.75)", "18.0"
-        )
+        hora_inicio_str = st.text_input("Hora de inicio", "18.0")
     with col2:
-        hora_fin_str = st.text_input(
-            "Hora de fin (ej: 20.0, 20.25, 20.5, 20.75)", "20.0"
-        )
+        hora_fin_str = st.text_input("Hora de fin", "21.0")
     with col3:
         monto_total = st.number_input(
-            "Total a pagar ($)", min_value=0.0, value=1000.0, step=100.0
+            "Total a pagar ($)", min_value=0.0, value=10000.0, step=1000.0
         )
     st.markdown("#### Jugadores iniciales (4)")
     jugadores = []
