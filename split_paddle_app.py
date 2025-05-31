@@ -132,41 +132,39 @@ st.title("Paddle Split (Web)")
 
 st.info("Usa solo números y puntos para las horas. Ejemplo: 18, 18.15, 18.30, 18.45")
 
-# Lista de nombres sugeridos para autocompletar
-nombres_sugeridos = ["Dario", "Diego", "Federico", "Gustavo", "Hugo", "Mariano", "Yel"]
+# Sugerencias para horas
+sugerencias_inicio = ["17", "17.30", "18", "18.30", "19"]
+sugerencias_fin = ["20", "20.30", "21", "21.30", "22"]
+sugerencias_llegada = ["17", "17.30", "18", "18.30", "19"]
+sugerencias_salida = ["20", "20.30", "21", "21.30", "22"]
+
+nombres_sugeridos = [
+    "Dario",
+    "Diego",
+    "El Crack",
+    "Federico",
+    "Hugo",
+    "Mariano",
+    "Yel",
+]
 
 with st.form("datos_cancha"):
     col1, col2, col3 = st.columns(3)
     with col1:
-        hora_inicio_str = st.text_input("Hora de inicio", "18.0")
+        hora_inicio_str = st.selectbox(
+            "Hora de inicio", options=sugerencias_inicio, index=0, key="hora_inicio"
+        )
     with col2:
-        hora_fin_str = st.text_input("Hora de fin", "21.0")
+        hora_fin_str = st.selectbox(
+            "Hora de fin", options=sugerencias_fin, index=2, key="hora_fin"
+        )
     with col3:
         monto_total = st.number_input(
             "Total a pagar ($)", min_value=0.0, value=10000.0, step=1000.0
         )
-    st.markdown("#### Jugadores iniciales (4)")
+    st.markdown("#### Jugadores (mínimo 4)")
     jugadores = []
-    for i in range(4):
-        cols = st.columns(3)
-        nombre = cols[0].selectbox(
-            f"Nombre jugador #{i+1}",
-            options=[""] + nombres_sugeridos,
-            key=f"nombre{i}",
-            help="Escribe las primeras letras y selecciona el nombre",
-        )
-        salida = cols[1].text_input(
-            f"Salida jugador #{i+1} (ej: 20.0)", key=f"salida{i}"
-        )
-        jugadores.append(
-            {
-                "nombre": nombre,
-                "llegada": parsear_hora(hora_inicio_str),
-                "salida": parsear_hora(salida),
-            }
-        )
-    st.markdown("#### Agregar más jugadores (opcional)")
-    for i in range(4, 8):
+    for i in range(8):
         cols = st.columns(4)
         nombre = cols[0].selectbox(
             f"Nombre jugador #{i+1}",
@@ -174,8 +172,42 @@ with st.form("datos_cancha"):
             key=f"nombre{i}",
             help="Escribe las primeras letras y selecciona el nombre",
         )
-        llegada = cols[1].text_input(f"Llegada jugador #{i+1} ", key=f"llegada{i}")
-        salida = cols[2].text_input(f"Salida jugador #{i+1} ", key=f"salida{i}")
+        if i < 4:
+            # Llegada editable, por defecto igual a hora de inicio
+            llegada = cols[1].selectbox(
+                f"Llegada jugador #{i+1}",
+                options=sugerencias_llegada,
+                index=(
+                    sugerencias_llegada.index(hora_inicio_str)
+                    if hora_inicio_str in sugerencias_llegada
+                    else 0
+                ),
+                key=f"llegada{i}",
+            )
+            # Salida editable, por defecto igual a hora de fin
+            salida = cols[2].selectbox(
+                f"Salida jugador #{i+1}",
+                options=sugerencias_salida,
+                index=(
+                    sugerencias_salida.index(hora_fin_str)
+                    if hora_fin_str in sugerencias_salida
+                    else 0
+                ),
+                key=f"salida{i}",
+            )
+        else:
+            llegada = cols[1].selectbox(
+                f"Llegada jugador #{i+1}",
+                options=sugerencias_llegada,
+                index=0,
+                key=f"llegada{i}",
+            )
+            salida = cols[2].selectbox(
+                f"Salida jugador #{i+1}",
+                options=sugerencias_salida,
+                index=0,
+                key=f"salida{i}",
+            )
         if nombre:
             jugadores.append(
                 {
@@ -189,14 +221,15 @@ with st.form("datos_cancha"):
 if submitted:
     hora_inicio = parsear_hora(hora_inicio_str)
     hora_fin = parsear_hora(hora_fin_str)
+    jugadores_validos = [j for j in jugadores if j["nombre"]]
     if hora_inicio is None or hora_fin is None or hora_fin <= hora_inicio:
         st.error(
             "Las horas de inicio y fin deben ser válidas y la de fin mayor a la de inicio."
         )
-    elif not jugadores or len([j for j in jugadores if j["nombre"]]) < 4:
+    elif not jugadores_validos or len(jugadores_validos) < 4:
         st.error("Debes ingresar al menos 4 jugadores.")
     else:
         pagos_detallados = calcular_pagos_por_intervalos(
-            jugadores, monto_total, hora_inicio, hora_fin
+            jugadores_validos, monto_total, hora_inicio, hora_fin
         )
         mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total)
