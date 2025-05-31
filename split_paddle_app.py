@@ -103,8 +103,9 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
         horas = int(pago["tiempo"])
         minutos = int(round((pago["tiempo"] - horas) * 60))
         tiempo_str = f"{horas}:{minutos:02d}"
+        pago_redondeado = round(pago['pago'])
         st.write(
-            f"{pago['nombre'].upper().ljust(max_nombre)}   ${pago['pago']:,.2f}   {tiempo_str}{marca}"
+            f"{pago['nombre'].upper().ljust(max_nombre)}   ${pago['pago']:,.2f}   (redondeado: ${pago_redondeado:,})   {tiempo_str}{marca}"
         )
         suma_pagos += pago["pago"]
     total_horas_cancha = hora_fin - hora_inicio
