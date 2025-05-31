@@ -132,6 +132,9 @@ st.title("Paddle Split (Web)")
 
 st.info("Usa solo números y puntos para las horas. Ejemplo: 18, 18.15, 18.30, 18.45")
 
+# Lista de nombres sugeridos para autocompletar
+nombres_sugeridos = ["Dario", "Diego", "Federico", "Gustavo", "Hugo", "Mariano", "Yel"]
+
 with st.form("datos_cancha"):
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -146,7 +149,12 @@ with st.form("datos_cancha"):
     jugadores = []
     for i in range(4):
         cols = st.columns(3)
-        nombre = cols[0].text_input(f"Nombre jugador #{i+1}", key=f"nombre{i}")
+        nombre = cols[0].selectbox(
+            f"Nombre jugador #{i+1}",
+            options=[""] + nombres_sugeridos,
+            key=f"nombre{i}",
+            help="Escribe las primeras letras y selecciona el nombre",
+        )
         salida = cols[1].text_input(
             f"Salida jugador #{i+1} (ej: 20.0)", key=f"salida{i}"
         )
@@ -160,7 +168,12 @@ with st.form("datos_cancha"):
     st.markdown("#### Agregar más jugadores (opcional)")
     for i in range(4, 8):
         cols = st.columns(4)
-        nombre = cols[0].text_input(f"Nombre jugador #{i+1}", key=f"nombre{i}")
+        nombre = cols[0].selectbox(
+            f"Nombre jugador #{i+1}",
+            options=[""] + nombres_sugeridos,
+            key=f"nombre{i}",
+            help="Escribe las primeras letras y selecciona el nombre",
+        )
         llegada = cols[1].text_input(f"Llegada jugador #{i+1} ", key=f"llegada{i}")
         salida = cols[2].text_input(f"Salida jugador #{i+1} ", key=f"salida{i}")
         if nombre:
