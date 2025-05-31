@@ -94,6 +94,7 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
     min_tiempo = min(p["tiempo"] for p in pagos_detallados)
     max_nombre = max(len(p["nombre"]) for p in pagos_detallados)
     suma_pagos = 0
+    lines = []
     for pago in pagos_detallados:
         marca = ""
         if pago["tiempo"] == max_tiempo and max_tiempo != min_tiempo:
@@ -103,11 +104,17 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
         horas = int(pago["tiempo"])
         minutos = int(round((pago["tiempo"] - horas) * 60))
         tiempo_str = f"{horas}:{minutos:02d}"
-        pago_redondeado = round(pago['pago'])
-        st.write(
-            f"{pago['nombre'].upper().ljust(max_nombre)}   ${pago['pago']:,.2f}   (redondeado: ${pago_redondeado:,})   {tiempo_str}{marca}"
+        pago_redondeado = round(pago["pago"])
+        # Formato alineado y monoespaciado
+        lines.append(
+            f"{pago['nombre'].upper():<{max_nombre}} | "
+            f"${pago['pago']:>10,.2f} | "
+            f"redondeado: ${pago_redondeado:>7,} | "
+            f"{tiempo_str}{marca}"
         )
         suma_pagos += pago["pago"]
+    st.code("\n".join(lines), language="")  # Muestra todo alineado y monoespaciado
+
     total_horas_cancha = hora_fin - hora_inicio
     horas = int(total_horas_cancha)
     minutos = int(round((total_horas_cancha - horas) * 60))
