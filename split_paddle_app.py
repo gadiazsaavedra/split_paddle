@@ -151,12 +151,8 @@ with st.form("datos_cancha"):
     for i in range(4, 8):
         cols = st.columns(4)
         nombre = cols[0].text_input(f"Nombre jugador #{i+1}", key=f"nombre{i}")
-        llegada = cols[1].text_input(
-            f"Llegada jugador #{i+1} (ej: 18.5)", key=f"llegada{i}"
-        )
-        salida = cols[2].text_input(
-            f"Salida jugador #{i+1} (ej: 20.0)", key=f"salida{i}"
-        )
+        llegada = cols[1].text_input(f"Llegada jugador #{i+1} ", key=f"llegada{i}")
+        salida = cols[2].text_input(f"Salida jugador #{i+1} ", key=f"salida{i}")
         if nombre:
             jugadores.append(
                 {
