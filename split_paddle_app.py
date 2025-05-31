@@ -30,9 +30,7 @@ def parsear_hora(valor):
             return None
         return horas + minutos / 60
     except Exception:
-        # st.error(
-            "Formato de hora no reconocido. Usa por ejemplo 18.25 para 18:15, 18.5 para 18:30, 18.75 para 18:45."
-        )
+
         return None
 
 
