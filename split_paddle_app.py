@@ -86,40 +86,48 @@ def calcular_pagos_por_intervalos(jugadores, monto_total, hora_inicio, hora_fin)
 
 
 def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total):
-    st.subheader("Resumen de pagos")
+    st.subheader("Pagos por jugador")
     if not pagos_detallados:
         st.info("Sin jugadores.")
         return
+
     max_tiempo = max(p["tiempo"] for p in pagos_detallados)
     min_tiempo = min(p["tiempo"] for p in pagos_detallados)
-    max_nombre = max(len(p["nombre"]) for p in pagos_detallados)
     suma_pagos = 0
-    lines = []
+
     for pago in pagos_detallados:
         marca = ""
         if pago["tiempo"] == max_tiempo and max_tiempo != min_tiempo:
-            marca = " ★"
+            marca = " (más tiempo)"
         elif pago["tiempo"] == min_tiempo and max_tiempo != min_tiempo:
-            marca = " →"
+            marca = " (menos tiempo)"
         horas = int(pago["tiempo"])
         minutos = int(round((pago["tiempo"] - horas) * 60))
-        tiempo_str = f"{horas}:{minutos:02d}"
+        tiempo_str = f"{horas}h {minutos:02d}m"
         pago_redondeado = round(pago["pago"])
-        # Formato alineado y monoespaciado
-        lines.append(
-            f"{pago['nombre'].upper():<{max_nombre}} | "
-            f"${pago['pago']:>10,.2f} | "
-            f"redondeado: ${pago_redondeado:>7,} | "
-            f"{tiempo_str}{marca}"
-        )
         suma_pagos += pago["pago"]
-    st.code("\n".join(lines), language="")  # Muestra todo alineado y monoespaciado
+
+        # Tarjeta amigable para móvil
+        st.markdown(
+            f"""
+            <div style="border:1px solid #ddd; border-radius:8px; padding:10px; margin-bottom:10px; background:#fafafa;">
+                <b>{pago['nombre'].upper()}</b> {marca}<br>
+                <span style="color:#444;">Pago:</span> <b>${pago_redondeado:,.0f}</b><br>
+                <span style="color:#444;">(Exacto: ${pago['pago']:,.2f})</span><br>
+                <span style="color:#444;">Tiempo:</span> {tiempo_str}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     total_horas_cancha = hora_fin - hora_inicio
     horas = int(total_horas_cancha)
     minutos = int(round((total_horas_cancha - horas) * 60))
-    st.write(f"Cancha: {horas}h {minutos}min ({total_horas_cancha:.2f}h)")
-    st.write(f"Total: ${suma_pagos:,.2f}")
+    st.markdown(
+        f"<b>Cancha:</b> {horas}h {minutos}m ({total_horas_cancha:.2f}h)",
+        unsafe_allow_html=True,
+    )
+    st.markdown(f"<b>Total recaudado:</b> ${suma_pagos:,.2f}", unsafe_allow_html=True)
     if monto_total is not None and round(suma_pagos) != round(monto_total):
         st.warning(f"¡Atención! Suma ≠ total (${monto_total:.2f})")
 
