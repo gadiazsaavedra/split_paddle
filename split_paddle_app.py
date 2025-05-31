@@ -3,34 +3,30 @@ import streamlit as st
 
 def parsear_hora(valor):
     """
-    Convierte una entrada de hora en formato decimal (ej: 18.25, 18.5, 18.75, 18)
-    a decimal de horas. 18.25 = 18hs 15min, 18.5 = 18hs 30min, 18.75 = 18hs 45min, 18 = 18hs.
-    Solo acepta el punto como separador decimal.
+    Convierte una entrada de hora en formato flexible:
+    - 18      → 18.0
+    - 18.15   → 18.25
+    - 18.30   → 18.5
+    - 18.45   → 18.75
+    - 18.00   → 18.0
     """
     valor = str(valor).strip()
+    if not valor:
+        return None
     if "," in valor or ":" in valor:
         st.error("Solo se acepta el punto como separador decimal.")
         return None
-    if valor.isdigit():
-        return float(valor)
     try:
         partes = valor.split(".")
         horas = int(partes[0])
         minutos = int(partes[1]) if len(partes) > 1 else 0
-        if minutos == 25:
-            minutos = 15
-        elif minutos == 5:
-            minutos = 3
-        elif minutos == 50:
-            minutos = 30
-        elif minutos == 75:
-            minutos = 45
-        if minutos < 0 or minutos >= 60:
-            st.error("Los minutos deben estar entre 0 y 59.")
+        if minutos not in (0, 15, 30, 45):
+            st.error("Minutos válidos: 00, 15, 30, 45.")
             return None
-        return horas + minutos / 60
+        # Convierte minutos a fracción decimal
+        minutos_decimal = {0: 0, 15: 0.25, 30: 0.5, 45: 0.75}[minutos]
+        return horas + minutos_decimal
     except Exception:
-
         return None
 
 
@@ -134,9 +130,7 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
 
 st.title("Paddle Split (Web)")
 
-st.info(
-    "Usa solo números y puntos para las horas. Ejemplo: 18.25 para 18:15, 18.5 para 18:30"
-)
+st.info("Usa solo números y puntos para las horas. Ejemplo: 18, 18.15, 18.30, 18.45")
 
 with st.form("datos_cancha"):
     col1, col2, col3 = st.columns(3)
