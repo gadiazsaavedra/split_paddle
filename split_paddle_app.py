@@ -106,11 +106,18 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
         # Tarjeta amigable para móvil
         st.markdown(
             f"""
-            <div style="border:1px solid #ddd; border-radius:8px; padding:10px; margin-bottom:10px; background:#fafafa;">
+            <div style="
+                border:1px solid var(--secondary-background-color);
+                border-radius:8px;
+                padding:10px;
+                margin-bottom:10px;
+                background:var(--background-color);
+                color:var(--text-color);
+            ">
                 <b>{pago['nombre'].upper()}</b> {marca}<br>
-                <span style="color:#444;">Pago:</span> <b>${pago_redondeado:,.0f}</b><br>
-                <span style="color:#444;">(Exacto: ${pago['pago']:,.2f})</span><br>
-                <span style="color:#444;">Tiempo:</span> {tiempo_str}
+                <span style="color:var(--text-color);">Pago:</span> <b>${pago_redondeado:,.0f}</b><br>
+                <span style="color:var(--text-color);">(Exacto: ${pago['pago']:,.2f})</span><br>
+                <span style="color:var(--text-color);">Tiempo:</span> {tiempo_str}
             </div>
             """,
             unsafe_allow_html=True,
