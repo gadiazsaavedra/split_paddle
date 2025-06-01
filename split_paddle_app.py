@@ -209,7 +209,7 @@ with st.form("datos_cancha"):
         )
         forma_pago = cols[2].selectbox(
             "Forma de pago",
-            options=["Efectivo", "Billetera"],
+            options=["Efectivo", "ePago"],
             key=f"pago{i}",
         )
         jugadores.append(
@@ -263,7 +263,7 @@ if submitted:
             p["pago"] for p in pagos_detallados if p.get("forma_pago") == "Efectivo"
         )
         total_billetera = sum(
-            p["pago"] for p in pagos_detallados if p.get("forma_pago") == "Billetera"
+            p["pago"] for p in pagos_detallados if p.get("forma_pago") == "ePago"
         )
 
         st.markdown("---")
@@ -273,7 +273,7 @@ if submitted:
             unsafe_allow_html=True,
         )
         st.markdown(
-            f"📲 <b>Total a transferir por billetera:</b> <span style='color:blue'><b>${total_billetera:,.2f}</b></span>",
+            f"📲 <b>Total a transferir por billetera virtual:</b> <span style='color:blue'><b>${total_billetera:,.2f}</b></span>",
             unsafe_allow_html=True,
         )
         st.markdown(
