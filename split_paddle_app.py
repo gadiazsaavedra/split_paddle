@@ -93,7 +93,6 @@ def mostrar_pagos_streamlit(
 
     max_tiempo = max(p["tiempo"] for p in pagos_detallados)
     min_tiempo = min(p["tiempo"] for p in pagos_detallados)
-    suma_pagos = 0
 
     for pago in pagos_detallados:
         marca = ""
@@ -152,12 +151,23 @@ def mostrar_pagos_streamlit(
         f"<b>Cancha:</b> {horas}h {minutos}m ({total_horas_cancha:.2f}h)",
         unsafe_allow_html=True,
     )
-    st.markdown(f"<b>Total recaudado:</b> ${suma_pagos:,.2f}", unsafe_allow_html=True)
-    if monto_total is not None and round(suma_pagos) != round(monto_total):
-        mensaje = "¡Atención! Suma ≠ total"
-        if total_efectivo > 0 and total_billetera == 0:
-            mensaje += f"   |   Recaudado: ${total_efectivo:,.2f}"
-        st.warning(mensaje)
+
+    suma_total_recaudada = total_efectivo + total_billetera
+    st.markdown(
+        f"<b>Total recaudado:</b> ${suma_total_recaudada:,.2f}", unsafe_allow_html=True
+    )
+
+    if monto_total is not None and round(suma_total_recaudada) != round(monto_total):
+        diferencia = monto_total - suma_total_recaudada
+        st.markdown(
+            f"""
+            <div style="background: #fff3cd; border: 1.5px solid #ffe082; border-radius: 8px; padding: 12px; margin: 10px 0; color: #664d03; font-size: 1.05em;">
+                <b>¡Atención!</b> El total recaudado (<b>${suma_total_recaudada:,.2f}</b>) no coincide con el total a pagar ingresado (<b>${monto_total:,.2f}</b>).<br>
+                <b>Diferencia:</b> <span style="color:#d35400;"><b>${diferencia:,.2f}</b></span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 # --- Sugerencias y nombres ---
@@ -179,7 +189,7 @@ if "num_jugadores" not in st.session_state:
     st.session_state.num_jugadores = 4
 
 st.title("Paddle Split (Web)")
-st.info("Usa solo números y puntos para las horas. Ejemplo: 18, 18.15, 18.30, 18.45")
+# st.info("Usa solo números y puntos para las horas. Ejemplo: 18, 18.15, 18.30, 18.45")
 
 # Botón para agregar jugador (fuera del form)
 if st.session_state.num_jugadores < 12:
