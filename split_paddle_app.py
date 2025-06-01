@@ -112,8 +112,7 @@ def mostrar_pagos_streamlit(
             color_borde = "#2ecc40"
             color_pago = "green"
             forma_pago_str = "Efectivo"
-            pago_redondeado = math.floor(pago["pago"] / 100) * 100
-            pago_mostrar = f"<b>${pago_redondeado:,.0f}</b> <span style='font-size:0.9em;'>(redondeado)</span><br><span style='color:gray; font-size:0.95em;'>(Exacto: ${pago['pago']:,.2f})</span>"
+            pago_mostrar = f"<b>${pago['pago']:,.0f}</b> <span style='font-size:0.9em;'>(redondeado)</span>"
         else:
             icono = "📲"
             color_fondo = "#e6f0ff"
