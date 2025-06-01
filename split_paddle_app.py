@@ -250,7 +250,11 @@ with st.form("datos_cancha"):
                 "forma_pago": forma_pago,
             }
         )
-    submitted = st.form_submit_button("Calcular pagos")
+    st.markdown(" ")  # Espacio visual antes del botón
+
+    submitted = st.form_submit_button(
+        "🚀 CALCULAR PAGOS", type="primary"  # Esto lo hace más grande y destacado
+    )
 
 if submitted:
     hora_inicio = parsear_hora(hora_inicio_str)
@@ -373,16 +377,3 @@ if submitted:
             "<small>💵 = Efectivo &nbsp;&nbsp;&nbsp; 📲 = Billetera virtual</small>",
             unsafe_allow_html=True,
         )
-
-        # Si todos pagan en efectivo, mostrar recaudación total
-        if total_efectivo > 0 and total_billetera == 0:
-            st.markdown(
-                f"""
-                <div style="background: #e6ffe6; border-radius: 10px; padding: 16px; text-align: center; border: 2px solid #2ecc40; margin-top: 10px;">
-                    <span style="font-size: 1.5em;">💵</span><br>
-                    <b>Todos pagan en efectivo</b><br>
-                    <span style="color:green; font-size:1.3em;"><b>Total recaudado: ${total_efectivo:,.2f}</b></span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
