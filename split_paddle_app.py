@@ -266,16 +266,43 @@ if submitted:
             p["pago"] for p in pagos_detallados if p.get("forma_pago") == "ePago"
         )
 
+        # --- Mejor presentación de resultados ---
         st.markdown("---")
         st.subheader("Resumen por forma de pago")
-        st.markdown(
-            f"💵 <b>Total a juntar en efectivo:</b> <span style='color:green'><b>${total_efectivo:,.2f}</b></span>",
-            unsafe_allow_html=True,
+
+        col_efectivo, col_billetera = st.columns(2)
+        with col_efectivo:
+            st.markdown(
+                f"""
+                <div style="background: #e6ffe6; border-radius: 10px; padding: 16px; text-align: center; border: 2px solid #2ecc40;">
+                    <span style="font-size: 2em;">💵</span><br>
+                    <b>Total efectivo:</b><br>
+                    <span style="color:green; font-size:1.5em;"><b>${total_efectivo:,.2f}</b></span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with col_billetera:
+            st.markdown(
+                f"""
+                <div style="background: #e6f0ff; border-radius: 10px; padding: 16px; text-align: center; border: 2px solid #3498db;">
+                    <span style="font-size: 2em;">📲</span><br>
+                    <b>Total billetera:</b><br>
+                    <span style="color:#1976d2; font-size:1.5em;"><b>${total_billetera:,.2f}</b></span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("")
+
+        # Mensaje de éxito
+        st.success(
+            "¡Pagos calculados correctamente! Cada jugador puede ver su forma de pago y monto en el detalle de arriba."
         )
+
+        # Opcional: leyenda de íconos
         st.markdown(
-            f"📲 <b>Total a transferir por billetera virtual:</b> <span style='color:blue'><b>${total_billetera:,.2f}</b></span>",
+            "<small>💵 = Efectivo &nbsp;&nbsp;&nbsp; 📲 = Billetera virtual</small>",
             unsafe_allow_html=True,
-        )
-        st.markdown(
-            "Cada jugador puede ver su forma de pago y monto en el detalle de arriba."
         )
