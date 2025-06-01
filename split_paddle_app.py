@@ -99,19 +99,38 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
         pago_redondeado = round(pago["pago"])
         suma_pagos += pago["pago"]
 
+        # Ícono y color según forma de pago
+        if pago.get("forma_pago") == "Efectivo":
+            icono = "💵"
+            color_fondo = "#e6ffe6"
+            color_borde = "#2ecc40"
+            color_pago = "green"
+            forma_pago_str = "Efectivo"
+        else:
+            icono = "📲"
+            color_fondo = "#e6f0ff"
+            color_borde = "#3498db"
+            color_pago = "#1976d2"
+            forma_pago_str = "Billetera"
+
         st.markdown(
             f"""
             <div style="
-                border:1px solid var(--secondary-background-color);
-                border-radius:8px;
-                padding:10px;
-                margin-bottom:10px;
-                background:var(--background-color);
+                border:2px solid {color_borde};
+                border-radius:10px;
+                padding:12px;
+                margin-bottom:14px;
+                background:{color_fondo};
                 color:var(--text-color);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                font-size:1.1em;
             ">
-                <b>{pago['nombre'].upper()}</b> {marca}<br>
-                <span style="color:var(--text-color);">Pago:</span> <b>${pago_redondeado:,.0f}</b><br>
-                <span style="color:var(--text-color);">(Exacto: ${pago['pago']:,.2f})</span><br>
+                <span style="font-size:1.5em;">{icono}</span>
+                <b style="font-size:1.2em;"> {pago['nombre'].upper()}</b> {marca}<br>
+                <span style="color:{color_pago}; font-weight:bold;">{forma_pago_str}</span><br>
+                <span style="color:var(--text-color);">Pago:</span>
+                <span style="color:{color_pago}; font-size:1.2em;"><b>${pago_redondeado:,.0f}</b></span><br>
+                <span style="color:var(--text-color); font-size:0.95em;">(Exacto: ${pago['pago']:,.2f})</span><br>
                 <span style="color:var(--text-color);">Tiempo:</span> {tiempo_str}
             </div>
             """,
