@@ -23,7 +23,6 @@ def parsear_hora(valor):
         if minutos not in (0, 15, 30, 45):
             st.error("Minutos válidos: 00, 15, 30, 45.")
             return None
-        # Convierte minutos a fracción decimal
         minutos_decimal = {0: 0, 15: 0.25, 30: 0.5, 45: 0.75}[minutos]
         return horas + minutos_decimal
     except Exception:
@@ -31,9 +30,6 @@ def parsear_hora(valor):
 
 
 def calcular_pagos_por_intervalos(jugadores, monto_total, hora_inicio, hora_fin):
-    """
-    Calcula el pago de cada jugador prorrateando por intervalos según la cantidad de jugadores presentes en cada tramo.
-    """
     eventos = []
     for j in jugadores:
         if j["nombre"] and j["llegada"] is not None and j["salida"] is not None:
@@ -103,7 +99,6 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
         pago_redondeado = round(pago["pago"])
         suma_pagos += pago["pago"]
 
-        # Tarjeta amigable para móvil
         st.markdown(
             f"""
             <div style="
@@ -135,107 +130,101 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
         st.warning(f"¡Atención! Suma ≠ total (${monto_total:.2f})")
 
 
-st.title("Paddle Split (Web)")
-
-st.info("Usa solo números y puntos para las horas. Ejemplo: 18, 18.15, 18.30, 18.45")
-
-# Sugerencias para horas
+# --- Sugerencias y nombres ---
 sugerencias_inicio = ["17", "17.30", "18", "18.30", "19"]
 sugerencias_fin = ["20", "20.30", "21", "21.30", "22"]
-sugerencias_llegada = ["17", "17.30", "18", "18.30", "19"]
-sugerencias_salida = ["20", "20.30", "21", "21.30", "22"]
-
 nombres_sugeridos = [
     "Dario",
-    "Diego",
     "El Crack",
     "Federico",
     "Hugo",
     "Mariano",
     "Yel",
+    "Diego",
+    "Claudio",
 ]
 
+# --- Estado para cantidad de jugadores ---
+if "num_jugadores" not in st.session_state:
+    st.session_state.num_jugadores = 4
+
+st.title("Paddle Split (Web)")
+st.info("Usa solo números y puntos para las horas. Ejemplo: 18, 18.15, 18.30, 18.45")
+
+# Botón para agregar jugador (fuera del form)
+if st.session_state.num_jugadores < 12:
+    if st.button("Agregar jugador"):
+        st.session_state.num_jugadores += 1
+
+# Botón para quitar jugador (fuera del form)
+if st.session_state.num_jugadores > 4:
+    if st.button("Quitar último jugador"):
+        st.session_state.num_jugadores -= 1
+
 with st.form("datos_cancha"):
-    col1, col2, col3 = st.columns(3)
+    st.markdown("#### Datos de la cancha")
+    col1, col2 = st.columns(2)
     with col1:
         hora_inicio_str = st.selectbox(
-            "Hora de inicio", options=sugerencias_inicio, index=0, key="hora_inicio"
+            "Hora de inicio", options=sugerencias_inicio, index=2, key="hora_inicio"
         )
     with col2:
         hora_fin_str = st.selectbox(
             "Hora de fin", options=sugerencias_fin, index=2, key="hora_fin"
         )
-    with col3:
-        monto_total = st.number_input(
-            "Total a pagar ($)", min_value=0.0, value=10000.0, step=1000.0
-        )
-    st.markdown("#### Jugadores (mínimo 4)")
+    monto_total = st.number_input(
+        "Total a pagar ($)", min_value=0.0, value=10000.0, step=1000.0
+    )
+
+    st.markdown("#### Jugadores")
     jugadores = []
-    for i in range(8):
-        cols = st.columns(4)
-        nombre = cols[0].selectbox(
-            f"Nombre jugador #{i+1}",
+    for i in range(st.session_state.num_jugadores):
+        st.markdown(f"**Jugador #{i+1}**")
+        nombre = st.selectbox(
+            "Nombre",
             options=[""] + nombres_sugeridos,
             key=f"nombre{i}",
-            help="Escribe las primeras letras y selecciona el nombre",
+            help="Escribe o selecciona el nombre",
         )
-        if i < 4:
-            # Llegada editable, por defecto igual a hora de inicio
-            llegada = cols[1].selectbox(
-                f"Llegada jugador #{i+1}",
-                options=sugerencias_llegada,
-                index=(
-                    sugerencias_llegada.index(hora_inicio_str)
-                    if hora_inicio_str in sugerencias_llegada
-                    else 0
-                ),
-                key=f"llegada{i}",
-            )
-            # Salida editable, por defecto igual a hora de fin
-            salida = cols[2].selectbox(
-                f"Salida jugador #{i+1}",
-                options=sugerencias_salida,
-                index=(
-                    sugerencias_salida.index(hora_fin_str)
-                    if hora_fin_str in sugerencias_salida
-                    else 0
-                ),
-                key=f"salida{i}",
-            )
-        else:
-            llegada = cols[1].selectbox(
-                f"Llegada jugador #{i+1}",
-                options=sugerencias_llegada,
-                index=0,
-                key=f"llegada{i}",
-            )
-            salida = cols[2].selectbox(
-                f"Salida jugador #{i+1}",
-                options=sugerencias_salida,
-                index=0,
-                key=f"salida{i}",
-            )
-        if nombre:
-            jugadores.append(
-                {
-                    "nombre": nombre,
-                    "llegada": parsear_hora(llegada),
-                    "salida": parsear_hora(salida),
-                }
-            )
+        cols = st.columns(2)
+        llegada = cols[0].text_input(
+            "Llegada", value=hora_inicio_str, key=f"llegada{i}"
+        )
+        salida = cols[1].text_input("Salida", value=hora_fin_str, key=f"salida{i}")
+        jugadores.append(
+            {
+                "nombre": nombre,
+                "llegada": parsear_hora(llegada),
+                "salida": parsear_hora(salida),
+            }
+        )
     submitted = st.form_submit_button("Calcular pagos")
 
 if submitted:
     hora_inicio = parsear_hora(hora_inicio_str)
     hora_fin = parsear_hora(hora_fin_str)
     jugadores_validos = [j for j in jugadores if j["nombre"]]
+    # Validación visual inmediata
+    error = False
     if hora_inicio is None or hora_fin is None or hora_fin <= hora_inicio:
         st.error(
             "Las horas de inicio y fin deben ser válidas y la de fin mayor a la de inicio."
         )
+        error = True
     elif not jugadores_validos or len(jugadores_validos) < 4:
         st.error("Debes ingresar al menos 4 jugadores.")
+        error = True
     else:
+        for j in jugadores_validos:
+            if (
+                j["llegada"] is None
+                or j["salida"] is None
+                or j["llegada"] >= j["salida"]
+            ):
+                st.error(f"La llegada debe ser menor que la salida para {j['nombre']}.")
+                error = True
+                break
+    if not error:
         pagos_detallados = calcular_pagos_por_intervalos(
             jugadores_validos, monto_total, hora_inicio, hora_fin
         )
