@@ -186,7 +186,7 @@ with st.form("datos_cancha"):
             key=f"nombre{i}",
             help="Escribe o selecciona el nombre",
         )
-        cols = st.columns(2)
+        cols = st.columns(3)
         llegada = cols[0].selectbox(
             "Llegada",
             options=sugerencias_inicio + sugerencias_fin,
@@ -207,11 +207,17 @@ with st.form("datos_cancha"):
             ),
             key=f"salida{i}",
         )
+        forma_pago = cols[2].selectbox(
+            "Forma de pago",
+            options=["Efectivo", "Billetera"],
+            key=f"pago{i}",
+        )
         jugadores.append(
             {
                 "nombre": nombre,
                 "llegada": parsear_hora(llegada),
                 "salida": parsear_hora(salida),
+                "forma_pago": forma_pago,
             }
         )
     submitted = st.form_submit_button("Calcular pagos")
@@ -244,4 +250,32 @@ if submitted:
         pagos_detallados = calcular_pagos_por_intervalos(
             jugadores_validos, monto_total, hora_inicio, hora_fin
         )
+        # Añade la forma de pago a los pagos detallados
+        for pago in pagos_detallados:
+            for j in jugadores_validos:
+                if j["nombre"] == pago["nombre"]:
+                    pago["forma_pago"] = j["forma_pago"]
+
         mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total)
+
+        # Calcular totales por forma de pago
+        total_efectivo = sum(
+            p["pago"] for p in pagos_detallados if p.get("forma_pago") == "Efectivo"
+        )
+        total_billetera = sum(
+            p["pago"] for p in pagos_detallados if p.get("forma_pago") == "Billetera"
+        )
+
+        st.markdown("---")
+        st.subheader("Resumen por forma de pago")
+        st.markdown(
+            f"💵 <b>Total a juntar en efectivo:</b> <span style='color:green'><b>${total_efectivo:,.2f}</b></span>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f"📲 <b>Total a transferir por billetera:</b> <span style='color:blue'><b>${total_billetera:,.2f}</b></span>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            "Cada jugador puede ver su forma de pago y monto en el detalle de arriba."
+        )
