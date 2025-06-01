@@ -1,4 +1,5 @@
 import streamlit as st
+import math
 
 
 def parsear_hora(valor):
@@ -274,6 +275,34 @@ if submitted:
             for j in jugadores_validos:
                 if j["nombre"] == pago["nombre"]:
                     pago["forma_pago"] = j["forma_pago"]
+
+        # 1. Redondear pagos en efectivo hacia abajo de a 100
+        diferencia_total = 0
+        for pago in pagos_detallados:
+            if pago.get("forma_pago") == "Efectivo":
+                pago_original = pago["pago"]
+                pago_redondeado = math.floor(pago_original / 100) * 100
+                diferencia = pago_original - pago_redondeado
+                pago["pago"] = pago_redondeado
+                diferencia_total += diferencia
+
+        # 2. Sumar la diferencia a los de billetera (proporcionalmente)
+        billetera_jugadores = [
+            p for p in pagos_detallados if p.get("forma_pago") == "Billetera"
+        ]
+        if billetera_jugadores and diferencia_total > 0:
+            suma_billetera = sum(p["pago"] for p in billetera_jugadores)
+            for p in billetera_jugadores:
+                proporcion = (
+                    p["pago"] / suma_billetera
+                    if suma_billetera > 0
+                    else 1 / len(billetera_jugadores)
+                )
+                p["pago"] += diferencia_total * proporcion
+
+        # (Opcional) Redondear visualmente los pagos de billetera a 2 decimales
+        for p in billetera_jugadores:
+            p["pago"] = round(p["pago"], 2)
 
         mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total)
 
