@@ -78,7 +78,14 @@ def calcular_pagos_por_intervalos(jugadores, monto_total, hora_inicio, hora_fin)
     return pagos_detallados
 
 
-def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total):
+def mostrar_pagos_streamlit(
+    pagos_detallados,
+    hora_inicio,
+    hora_fin,
+    monto_total,
+    total_efectivo,
+    total_billetera,
+):
     st.subheader("Pagos por jugador")
     if not pagos_detallados:
         st.info("Sin jugadores.")
@@ -97,8 +104,6 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
         horas = int(pago["tiempo"])
         minutos = int(round((pago["tiempo"] - horas) * 60))
         tiempo_str = f"{horas}h {minutos:02d}m"
-        pago_redondeado = round(pago["pago"])
-        suma_pagos += pago["pago"]
 
         # Ícono y color según forma de pago
         if pago.get("forma_pago") == "Efectivo":
@@ -107,12 +112,16 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
             color_borde = "#2ecc40"
             color_pago = "green"
             forma_pago_str = "Efectivo"
+            pago_redondeado = math.floor(pago["pago"] / 100) * 100
+            pago_mostrar = f"<b>${pago_redondeado:,.0f}</b> <span style='font-size:0.9em;'>(redondeado)</span><br><span style='color:gray; font-size:0.95em;'>(Exacto: ${pago['pago']:,.2f})</span>"
         else:
             icono = "📲"
             color_fondo = "#e6f0ff"
             color_borde = "#3498db"
             color_pago = "#1976d2"
             forma_pago_str = "Billetera"
+            pago_redondeado = round(pago["pago"], 2)
+            pago_mostrar = f"<b>${pago_redondeado:,.2f}</b>"
 
         st.markdown(
             f"""
@@ -130,8 +139,7 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
                 <b style="font-size:1.2em;"> {pago['nombre'].upper()}</b> {marca}<br>
                 <span style="color:{color_pago}; font-weight:bold;">{forma_pago_str}</span><br>
                 <span style="color:var(--text-color);">Pago:</span>
-                <span style="color:{color_pago}; font-size:1.2em;"><b>${pago_redondeado:,.0f}</b></span><br>
-                <span style="color:var(--text-color); font-size:0.95em;">(Exacto: ${pago['pago']:,.2f})</span><br>
+                <span style="color:{color_pago}; font-size:1.2em;">{pago_mostrar}</span><br>
                 <span style="color:var(--text-color);">Tiempo:</span> {tiempo_str}
             </div>
             """,
@@ -147,7 +155,10 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
     )
     st.markdown(f"<b>Total recaudado:</b> ${suma_pagos:,.2f}", unsafe_allow_html=True)
     if monto_total is not None and round(suma_pagos) != round(monto_total):
-        st.warning(f"¡Atención! Suma ≠ total (${monto_total:.2f})")
+        mensaje = "¡Atención! Suma ≠ total"
+        if total_efectivo > 0 and total_billetera == 0:
+            mensaje += f"   |   Recaudado: ${total_efectivo:,.2f}"
+        st.warning(mensaje)
 
 
 # --- Sugerencias y nombres ---
@@ -304,14 +315,22 @@ if submitted:
         for p in billetera_jugadores:
             p["pago"] = round(p["pago"], 2)
 
-        mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total)
-
-        # Calcular totales por forma de pago
+        # Calcula los totales ANTES de mostrar los pagos
         total_efectivo = sum(
             p["pago"] for p in pagos_detallados if p.get("forma_pago") == "Efectivo"
         )
         total_billetera = sum(
             p["pago"] for p in pagos_detallados if p.get("forma_pago") == "Billetera"
+        )
+
+        # Pasa los totales a la función
+        mostrar_pagos_streamlit(
+            pagos_detallados,
+            hora_inicio,
+            hora_fin,
+            monto_total,
+            total_efectivo,
+            total_billetera,
         )
 
         # --- Mejor presentación de resultados ---
@@ -354,3 +373,16 @@ if submitted:
             "<small>💵 = Efectivo &nbsp;&nbsp;&nbsp; 📲 = Billetera virtual</small>",
             unsafe_allow_html=True,
         )
+
+        # Si todos pagan en efectivo, mostrar recaudación total
+        if total_efectivo > 0 and total_billetera == 0:
+            st.markdown(
+                f"""
+                <div style="background: #e6ffe6; border-radius: 10px; padding: 16px; text-align: center; border: 2px solid #2ecc40; margin-top: 10px;">
+                    <span style="font-size: 1.5em;">💵</span><br>
+                    <b>Todos pagan en efectivo</b><br>
+                    <span style="color:green; font-size:1.3em;"><b>Total recaudado: ${total_efectivo:,.2f}</b></span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
