@@ -280,11 +280,12 @@ if submitted:
         pagos_detallados = calcular_pagos_por_intervalos(
             jugadores_validos, monto_total, hora_inicio, hora_fin
         )
-        # Añade la forma de pago a los pagos detallados
+        # Antes de calcular pagos_detallados:
+        forma_pago_dict = {j["nombre"]: j["forma_pago"] for j in jugadores_validos}
+
+        # Después de calcular pagos_detallados:
         for pago in pagos_detallados:
-            for j in jugadores_validos:
-                if j["nombre"] == pago["nombre"]:
-                    pago["forma_pago"] = j["forma_pago"]
+            pago["forma_pago"] = forma_pago_dict.get(pago["nombre"], "Efectivo")
 
         # 1. Redondear pagos en efectivo hacia abajo de a 100
         diferencia_total = 0
