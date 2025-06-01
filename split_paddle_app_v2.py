@@ -193,7 +193,7 @@ st.title("Paddle Split (Web)")
 
 # Botón para agregar jugador (fuera del form)
 if st.session_state.num_jugadores < 12:
-    if st.button("Agregar jugador"):
+    if st.button("👤➕ Agregar jugador", type="secondary"):  # Gris, menos destacado
         st.session_state.num_jugadores += 1
 
 # Botón para quitar jugador (fuera del form)
@@ -263,7 +263,7 @@ with st.form("datos_cancha"):
     st.markdown(" ")  # Espacio visual antes del botón
 
     submitted = st.form_submit_button(
-        "🚀 CALCULAR PAGOS", type="primary"  # Esto lo hace más grande y destacado
+        "🚀 CALCULAR PAGOS", type="primary"  # Azul, más destacado
     )
 
 if submitted:
