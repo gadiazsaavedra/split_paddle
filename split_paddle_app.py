@@ -131,8 +131,8 @@ def mostrar_pagos_streamlit(pagos_detallados, hora_inicio, hora_fin, monto_total
 
 
 # --- Sugerencias y nombres ---
-sugerencias_inicio = ["17", "17.30", "18", "18.30", "19"]
-sugerencias_fin = ["20", "20.30", "21", "21.30", "22"]
+sugerencias_inicio = ["17", "17.30", "18", "18.30", "19", "19.30", "20"]
+sugerencias_fin = ["18", "18.30", "19", "19.30", "20", "20.30", "21", "21.30", "22"]
 nombres_sugeridos = [
     "Dario",
     "El Crack",
@@ -187,10 +187,26 @@ with st.form("datos_cancha"):
             help="Escribe o selecciona el nombre",
         )
         cols = st.columns(2)
-        llegada = cols[0].text_input(
-            "Llegada", value=hora_inicio_str, key=f"llegada{i}"
+        llegada = cols[0].selectbox(
+            "Llegada",
+            options=sugerencias_inicio + sugerencias_fin,
+            index=(
+                (sugerencias_inicio + sugerencias_fin).index(hora_inicio_str)
+                if hora_inicio_str in (sugerencias_inicio + sugerencias_fin)
+                else 0
+            ),
+            key=f"llegada{i}",
         )
-        salida = cols[1].text_input("Salida", value=hora_fin_str, key=f"salida{i}")
+        salida = cols[1].selectbox(
+            "Salida",
+            options=sugerencias_fin,
+            index=(
+                sugerencias_fin.index(hora_fin_str)
+                if hora_fin_str in sugerencias_fin
+                else 0
+            ),
+            key=f"salida{i}",
+        )
         jugadores.append(
             {
                 "nombre": nombre,
