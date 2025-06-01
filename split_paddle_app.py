@@ -228,7 +228,7 @@ with st.form("datos_cancha"):
         )
         forma_pago = cols[2].selectbox(
             "Forma de pago",
-            options=["Efectivo", "ePago"],
+            options=["Efectivo", "Billetera"],  # <--- Cambiado aquí
             key=f"pago{i}",
         )
         jugadores.append(
@@ -282,7 +282,7 @@ if submitted:
             p["pago"] for p in pagos_detallados if p.get("forma_pago") == "Efectivo"
         )
         total_billetera = sum(
-            p["pago"] for p in pagos_detallados if p.get("forma_pago") == "ePago"
+            p["pago"] for p in pagos_detallados if p.get("forma_pago") == "Billetera"
         )
 
         # --- Mejor presentación de resultados ---
