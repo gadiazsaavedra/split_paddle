@@ -219,39 +219,60 @@ with st.form("datos_cancha"):
     st.markdown("#### Jugadores")
     jugadores = []
     for i in range(st.session_state.num_jugadores):
-        st.markdown(f"**Jugador #{i+1}**")
-        nombre = st.selectbox(
-            "Nombre",
-            options=[""] + nombres_sugeridos,
-            key=f"nombre{i}",
-            help="Escribe o selecciona el nombre",
-        )
-        cols = st.columns(3)
-        llegada = cols[0].selectbox(
-            "Llegada",
-            options=sugerencias_inicio + sugerencias_fin,
-            index=(
-                (sugerencias_inicio + sugerencias_fin).index(hora_inicio_str)
-                if hora_inicio_str in (sugerencias_inicio + sugerencias_fin)
-                else 0
-            ),
-            key=f"llegada{i}",
-        )
-        salida = cols[1].selectbox(
-            "Salida",
-            options=sugerencias_fin,
-            index=(
-                sugerencias_fin.index(hora_fin_str)
-                if hora_fin_str in sugerencias_fin
-                else 0
-            ),
-            key=f"salida{i}",
-        )
-        forma_pago = cols[2].selectbox(
-            "Forma de pago",
-            options=["Efectivo", "Billetera"],  # <--- Cambiado aquí
-            key=f"pago{i}",
-        )
+        es_inicial = i < 4
+        # Tarjeta azul suave para los iniciales, neutra para el resto
+        if es_inicial:
+            borde = "2.5px solid var(--primary-color)"
+            fondo = "rgba(0, 123, 255, 0.10)"  # Azul suave, compatible con ambos modos
+            icono = "⭐️"
+        else:
+            borde = "1.5px solid var(--secondary-background-color)"
+            fondo = "var(--secondary-background-color)"
+            icono = ""
+        with st.container():
+            st.markdown(
+                f"""
+                <div style="border:{borde}; border-radius:10px; background:{fondo}; padding:14px; margin-bottom:14px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                    <span style="font-size:1.2em; font-weight:bold;">{icono} Jugador #{i+1}</span>
+                    <div style="margin-top:10px;">
+                """,
+                unsafe_allow_html=True,
+            )
+            nombre = st.selectbox(
+                "Nombre",
+                options=[""] + nombres_sugeridos,
+                key=f"nombre{i}",
+                help="Escribe o selecciona el nombre",
+            )
+            cols = st.columns(3)
+            llegada = cols[0].selectbox(
+                "Llegada",
+                options=sugerencias_inicio + sugerencias_fin,
+                index=(
+                    (sugerencias_inicio + sugerencias_fin).index(hora_inicio_str)
+                    if hora_inicio_str in (sugerencias_inicio + sugerencias_fin)
+                    else 0
+                ),
+                key=f"llegada{i}",
+            )
+            salida = cols[1].selectbox(
+                "Salida",
+                options=sugerencias_fin,
+                index=(
+                    sugerencias_fin.index(hora_fin_str)
+                    if hora_fin_str in sugerencias_fin
+                    else 0
+                ),
+                key=f"salida{i}",
+            )
+            forma_pago = cols[2].selectbox(
+                "Forma de pago",
+                options=["Efectivo", "Billetera"],
+                key=f"pago{i}",
+            )
+            if es_inicial:
+                st.caption("⭐️ Este jugador es obligatorio para el cálculo.")
+            st.markdown("</div></div>", unsafe_allow_html=True)
         jugadores.append(
             {
                 "nombre": nombre,
