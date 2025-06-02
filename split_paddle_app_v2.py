@@ -297,8 +297,17 @@ if submitted:
     hora_inicio = parsear_hora(hora_inicio_str)
     hora_fin = parsear_hora(hora_fin_str)
     jugadores_validos = [j for j in jugadores if j["nombre"]]
-    # Validación visual inmediata
     error = False
+
+    # Validación de nombres repetidos
+    nombres = [j["nombre"].strip().lower() for j in jugadores_validos]
+    nombres_repetidos = set([n for n in nombres if nombres.count(n) > 1])
+    if nombres_repetidos:
+        st.error(
+            f"No se permiten nombres repetidos: {', '.join(n.title() for n in nombres_repetidos)}"
+        )
+        error = True
+
     if hora_inicio is None or hora_fin is None or hora_fin <= hora_inicio:
         st.error(
             "Las horas de inicio y fin deben ser válidas y la de fin mayor a la de inicio."
