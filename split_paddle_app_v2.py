@@ -94,7 +94,7 @@ def mostrar_pagos_streamlit(
     max_tiempo = max(p["tiempo"] for p in pagos_detallados)
     min_tiempo = min(p["tiempo"] for p in pagos_detallados)
 
-    for pago in pagos_detallados:
+    for idx, pago in enumerate(pagos_detallados):
         marca = ""
         if pago["tiempo"] == max_tiempo and max_tiempo != min_tiempo:
             marca = " (más tiempo)"
@@ -107,38 +107,44 @@ def mostrar_pagos_streamlit(
         # Ícono y color según forma de pago
         if pago.get("forma_pago") == "Efectivo":
             icono = "💵"
-            color_fondo = "#e6ffe6"
-            color_borde = "#2ecc40"
-            color_pago = "green"
             forma_pago_str = "Efectivo"
             pago_mostrar = f"<b>${pago['pago']:,.0f}</b> <span style='font-size:0.9em;'>(redondeado)</span>"
         else:
             icono = "📲"
-            color_fondo = "#e6f0ff"
-            color_borde = "#3498db"
-            color_pago = "#1976d2"
             forma_pago_str = "Billetera"
             pago_redondeado = round(pago["pago"], 2)
             pago_mostrar = f"<b>${pago_redondeado:,.2f}</b>"
 
+        # Tarjeta azul suave para los jugadores 1-4, neutra para el resto
+        es_inicial = idx < 4
+        if es_inicial:
+            borde = "2.5px solid var(--primary-color)"
+            fondo = "rgba(0, 123, 255, 0.10)"
+        else:
+            borde = "1.5px solid var(--secondary-background-color)"
+            fondo = "var(--secondary-background-color)"
+
         st.markdown(
             f"""
             <div style="
-                border:2px solid {color_borde};
+                border:{borde};
                 border-radius:10px;
-                padding:12px;
+                padding:14px 10px 14px 10px;
                 margin-bottom:14px;
-                background:{color_fondo};
+                background:{fondo};
                 color:var(--text-color);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-                font-size:1.1em;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+                font-size:1em;
+                word-break: break-word;
             ">
-                <span style="font-size:1.5em;">{icono}</span>
-                <b style="font-size:1.2em;"> {pago['nombre'].upper()}</b> {marca}<br>
-                <span style="color:{color_pago}; font-weight:bold;">{forma_pago_str}</span><br>
-                <span style="color:var(--text-color);">Pago:</span>
-                <span style="color:{color_pago}; font-size:1.2em;">{pago_mostrar}</span><br>
-                <span style="color:var(--text-color);">Tiempo:</span> {tiempo_str}
+                <div style="display:flex; align-items:center;">
+                    <span style="font-size:1.3em; margin-right:8px;">{icono}</span>
+                    <span style="font-weight:bold; font-size:1.1em; color:var(--text-color);">{pago['nombre']}</span>
+                </div>
+                <div style="font-size:0.95em; color:var(--text-color);">{marca}</div>
+                <div style="color:var(--primary-color); font-weight:bold; margin-top:2px;">{forma_pago_str}</div>
+                <div style="color:var(--text-color);">Pago: <span style="color:var(--primary-color); font-size:1.1em;">{pago_mostrar}</span></div>
+                <div style="color:var(--text-color); font-size:0.95em;">Tiempo: {tiempo_str}</div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -376,10 +382,10 @@ if submitted:
         with col_efectivo:
             st.markdown(
                 f"""
-                <div style="background: #e6ffe6; border-radius: 10px; padding: 16px; text-align: center; border: 2px solid #2ecc40;">
+                <div style="background: var(--secondary-background-color); border-radius: 10px; padding: 16px; text-align: center; border: 2px solid var(--primary-color);">
                     <span style="font-size: 2em;">💵</span><br>
-                    <b>Total efectivo:</b><br>
-                    <span style="color:green; font-size:1.5em;"><b>${total_efectivo:,.2f}</b></span>
+                    <span style="font-size:1em; color:var(--primary-color); font-weight:bold;">Total efectivo</span><br>
+                    <span style="color:var(--primary-color); font-size:1.5em;"><b>${total_efectivo:,.2f}</b></span>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -387,10 +393,10 @@ if submitted:
         with col_billetera:
             st.markdown(
                 f"""
-                <div style="background: #e6f0ff; border-radius: 10px; padding: 16px; text-align: center; border: 2px solid #3498db;">
+                <div style="background: var(--secondary-background-color); border-radius: 10px; padding: 16px; text-align: center; border: 2px solid var(--primary-color);">
                     <span style="font-size: 2em;">📲</span><br>
-                    <b>Total billetera:</b><br>
-                    <span style="color:#1976d2; font-size:1.5em;"><b>${total_billetera:,.2f}</b></span>
+                    <span style="font-size:1em; color:var(--primary-color); font-weight:bold;">Total billetera</span><br>
+                    <span style="color:var(--primary-color); font-size:1.5em;"><b>${total_billetera:,.2f}</b></span>
                 </div>
                 """,
                 unsafe_allow_html=True,
