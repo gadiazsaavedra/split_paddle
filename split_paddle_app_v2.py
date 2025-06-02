@@ -175,7 +175,7 @@ sugerencias_inicio = ["17", "17.30", "18", "18.30", "19", "19.30", "20"]
 sugerencias_fin = ["18", "18.30", "19", "19.30", "20", "20.30", "21", "21.30", "22"]
 nombres_sugeridos = [
     "Dario",
-    "El Crack",
+    "Gustavo",
     "Federico",
     "Hugo",
     "Mariano",
