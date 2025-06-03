@@ -263,7 +263,7 @@ nombres_sugeridos = [
 if "num_jugadores" not in st.session_state:
     st.session_state.num_jugadores = MIN_JUGADORES
 
-st.title("Paddle Split (Web)")
+st.title("Poniendo estaba la gansa")
 # st.info("Usa solo números y puntos para las horas. Ejemplo: 18, 18.15, 18.30, 18.45")
 
 # Botón para agregar jugador (fuera del form)
